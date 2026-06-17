@@ -1,0 +1,376 @@
+{
+  "name": "SmartInboxCleaner: OAuth Handshake",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "YOUR_WEBHOOK_PATH_HERE",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "YOUR_SECRET_WEBHOOK_ID_HERE",
+      "name": "Webhook",
+      "webhookId": "YOUR_INTERNAL_NODE_ID"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://oauth2.googleapis.com/token",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "code",
+              "value": "={{ $json.query.code }}"
+            },
+            {
+              "name": "client_id",
+              "value": "YOUR_CLIENT_ID_HERE"
+            },
+            {
+              "name": "client_secret",
+              "value": "YOUR_CLIENT_SECRET_HERE"
+            },
+            {
+              "name": "redirect_uri",
+              "value": "https://agentic.buildwithjuliet.com/webhook/YOUR_SECRET_WEBHOOK_PATH_HERE"
+            },
+            {
+              "name": "grant_type",
+              "value": "authorization_code"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "e1607f5d-a54a-4f11-ad60-e1bb34ff33e7",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/oauth2/v3/userinfo",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "6f48896b-efd3-430b-b55d-295fdce00df2",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "YOUR_NOTION_DATABASE_ID",
+          "mode": "list",
+          "cachedResultName": "SmartInboxCleanup Signups",
+          "cachedResultUrl": "YOUR_NOTION_DATABASE_URL"
+        },
+        "returnAll": true,
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Email|email",
+              "condition": "equals",
+              "emailValue": "={{ $json.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "YOUR_NOTION_DATABASE_ID",
+      "name": "Get many database pages",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "notionApi": {
+          "id": "YB4PpmfIX9jR3vyf",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "50787a09-9039-4f69-836d-97b8f008b58f",
+              "leftValue": "={{ $json.property_email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        832,
+        0
+      ],
+      "id": "b6532513-5701-49ba-b64e-9535a44c7709",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "8ad556fd-bd87-46db-a21b-d58f992aec30",
+          "mode": "list",
+          "cachedResultName": "SmartInboxCleanup Signups",
+          "cachedResultUrl": "https://www.notion.so/YOUR_NOTION_DATABASE_URL"
+        },
+        "title": "={{ $('HTTP Request1').item.json.name }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Email|email",
+              "emailValue": "={{ $('HTTP Request1').item.json.email }}"
+            },
+            {
+              "key": "Refresh_token|rich_text",
+              "textContent": "={{ $('HTTP Request').item.json.refresh_token }}"
+            },
+            {
+              "key": "Acess_token|rich_text",
+              "textContent": "={{ $('HTTP Request').item.json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        -112
+      ],
+      "id": "a2c2963a-cc84-4221-8166-d18675947c14",
+      "name": "Create a database page",
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "notionApi": {
+          "id": "YB4PpmfIX9jR3vyf",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Acess_token|rich_text",
+              "textContent": "={{ $('HTTP Request').item.json.access_token }}"
+            },
+            {
+              "key": "Refresh_token|rich_text",
+              "textContent": "={{ $('HTTP Request').item.json.refresh_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        96
+      ],
+      "id": "3f2d8ce9-e383-48e1-98e0-26a57c017ce1",
+      "name": "Update a database page",
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "notionApi": {
+          "id": "YB4PpmfIX9jR3vyf",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=<div style=\"font-family: sans-serif; text-align: center; margin-top: 100px;\">\n  <h2 style=\"color: #333;\">Thanks for joining, {{ $('HTTP Request1').item.json.given_name }}!</h2>\n  <p>You're being directed to the form...</p>\n  \n  <!-- Pulsing circle object -->\n  <div style=\"width: 50px; height: 50px; background-color: #007bff; border-radius: 50%; margin: 20px auto; animation: pulse 1.5s infinite;\"></div>\n</div>\n\n<style>\n  @keyframes pulse {\n    0% { transform: scale(0.9); opacity: 0.7; }\n    50% { transform: scale(1.1); opacity: 1; }\n    100% { transform: scale(0.9); opacity: 0.7; }\n  }\n</style>\n\n<script>\n  setTimeout(function() {\n    window.location.href = \"https://tally.so/r/1Apz5L\";\n  }, 5000);\n</script>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1296,
+        16
+      ],
+      "id": "87d77a6a-ac90-4d69-a1c5-a109ff6e4dfb",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Get many database pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many database pages": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Create a database page",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update a database page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a database page": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a database page": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "CdWpp01CAJ77XYto",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "84f4cefc-46b5-4a04-9e0e-b1783180d690",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "YOUR_INSTANCE_ID"
+  },
+  "nodeGroups": [],
+  "id": "GrSro6jQadoQL5hM",
+  "tags": []
+}
