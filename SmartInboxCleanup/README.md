@@ -35,3 +35,12 @@ I built this n8n workflow as a high-speed cleanup engine. It doesn't continuousl
 ## System Reliability
 To ensure the workflow runs smoothly, I have included an automated error-handling trigger. If the workflow encounters an issue during execution, it instantly notifies me via Slack so I can address it immediately.
 *Created by Juliet | Building founder-level automation systems.
+
+For the "Weekly Inbox Cleaner" section:
+![Weekly Inbox Cleaner Architecture](weekly-inbox-reset-arch.png)
+
+For the "How It Works" section in SmartInboxCleanup:
+![OAuth Handshake Architecture](oauth_handshake_png.png)
+
+For the "System Reliability" or final overview section:
+![SmartInboxCleanup Architecture](Smartinboxcleanup%20png.png)
