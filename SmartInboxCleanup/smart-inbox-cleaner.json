@@ -20,12 +20,12 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.9,
       "position": [
-        944,
-        96
+        -640,
+        80
       ],
-      "id": "4a8e1bd0-b2f9-42cd-b277-4ab3e4b1b9d0",
+      "id": "b0828dec-17da-4e07-9426-d6e94c309251",
       "name": "Basic LLM Chain",
-      "retryOnFail": true,
+      "retryOnFail": false,
       "waitBetweenTries": 5000,
       "alwaysOutputData": true,
       "maxTries": 2
@@ -92,10 +92,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        1840,
-        112
+        256,
+        96
       ],
-      "id": "5b781e42-80d6-437a-9835-7579af6262f9",
+      "id": "d4b9b84c-f5d9-4f4f-96b0-6e491c1bceda",
       "name": "Switch",
       "alwaysOutputData": true,
       "onError": "continueRegularOutput"
@@ -113,14 +113,14 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.5,
       "position": [
-        848,
-        304
+        -752,
+        368
       ],
-      "id": "df497e6a-18a4-46d6-8842-971879024776",
+      "id": "82e04043-21c9-4f61-a2d2-bc1c20db0a8a",
       "name": "Anthropic Chat Model",
       "credentials": {
         "anthropicApi": {
-          "id": "YOUR_ANTHROPIC_CREDENTIAL_ID",
+          "id": "jZp19ZievzeThsoC",
           "name": "Anthropic account"
         }
       }
@@ -131,10 +131,10 @@
         "operation": "getAll",
         "databaseId": {
           "__rl": true,
-          "value": "YOUR_NOTION_DATABASE_ID",
+          "value": "8ad556fd-bd87-46db-a21b-d58f992aec30",
           "mode": "list",
           "cachedResultName": "SmartInboxCleanup Signups",
-          "cachedResultUrl": "https://www.notion.so/YOUR_NOTION_DATABASE_URL"
+          "cachedResultUrl": "https://app.notion.com/p/8ad556fdbd8746dba21bd58f992aec30"
         },
         "returnAll": true,
         "filterType": "manual",
@@ -161,16 +161,17 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        -864,
-        96
+        -2448,
+        80
       ],
-      "id": "YOUR_NOTION_DATABASE_ID",
+      "id": "3a34a68f-efb0-4276-b3e5-fdf2c630a9f4",
       "name": "Get many database pages",
-      "retryOnFail": true,
+      "retryOnFail": false,
       "waitBetweenTries": 3000,
+      "alwaysOutputData": true,
       "credentials": {
         "notionApi": {
-          "id": "YOUR_NOTION_CREDENTIAL_ID",
+          "id": "VABxZHZ9wOaMHU7V",
           "name": "Notion account"
         }
       }
@@ -188,10 +189,6 @@
         "propertiesUi": {
           "propertyValues": [
             {
-              "key": "Status|status",
-              "statusValue": "In progress"
-            },
-            {
               "key": "KEEP_KEYWORDS|rich_text",
               "textContent": "={{ $('Tally submission').item.json.body.data.fields[2].value }}"
             },
@@ -206,16 +203,17 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        -640,
-        96
+        -2224,
+        80
       ],
-      "id": "YOUR_NOTION_DATABASE_ID",
+      "id": "59a4d94b-0e01-448e-b5de-fb090e563229",
       "name": "Update a database page",
       "retryOnFail": true,
       "waitBetweenTries": 3000,
+      "alwaysOutputData": true,
       "credentials": {
         "notionApi": {
-          "id": "YOUR_NOTION_CREDENTIAL_ID",
+          "id": "VABxZHZ9wOaMHU7V",
           "name": "Notion account"
         }
       }
@@ -224,7 +222,7 @@
       "parameters": {
         "sendHTML": true,
         "subject": "Your inbox just got a full reset. 🧹",
-        "htmlContent": "=<p>Hi {{ $json.userName }},</p>\n\n<p>We went through everything and sorted it out for you. In total, we processed {{ $json.totalProcessed }} emails.</p>\n\n<p>If this saved you some stress today, a quick review or feedback would mean a lot to us. Just reply to this email.</p>\n\n<p>For any issues, reach us at support@buildwithjuliet.com</p>\n\n<p>Best,<br>\n<a href=\"https://www.linkedin.com/in/buildwithjuliet\">buildwithjuliet.com</a></p>",
+        "htmlContent": "=<p>Hi {{ $json.userName }},</p>\n<p>We went through everything and sorted it out for you. In total, we processed {{ $json.totalProcessed }} emails.</p>\n<p>If this saved you some stress today, I'd love to hear about it. Takes less than 2 minutes:</p>\n\n<p>\n  <a href=\"https://testimonial.to/smartinboxcleanup\" style=\"background-color: #E46F03; color: #E5DCD3; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;\">\n    Leave a quick review →\n  </a>\n</p>\n\n<p>For any issues, reach me at support@buildwithjuliet.com</p>\n<p>Best,<br>\nbuildwithjuliet</p>",
         "sender": "kosy@buildwithjuliet.com",
         "receipients": "={{ $json.userEmail }}",
         "additionalFields": {},
@@ -233,15 +231,15 @@
       "type": "n8n-nodes-base.sendInBlue",
       "typeVersion": 1,
       "position": [
-        2640,
-        112
+        1056,
+        96
       ],
-      "id": "ceb3bc1f-15c7-48e7-98be-ddc19574f1b3",
+      "id": "9111f22f-b526-4a73-a6d3-f3a6b41f241b",
       "name": "Send a transactional email",
       "retryOnFail": true,
       "credentials": {
         "sendInBlueApi": {
-          "id": "YOUR_BREVO_CREDENTIAL_ID",
+          "id": "1YO883B9RfJfWkIJ",
           "name": "Brevo account"
         }
       }
@@ -268,14 +266,14 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        2864,
-        112
+        1280,
+        96
       ],
-      "id": "YOUR_NOTION_DATABASE_ID",
+      "id": "b83639de-fb6a-4bc6-82e3-2d184c3c142c",
       "name": "Update a database page1",
       "credentials": {
         "notionApi": {
-          "id": "YOUR_NOTION_CREDENTIAL_ID",
+          "id": "VABxZHZ9wOaMHU7V",
           "name": "Notion account"
         }
       }
@@ -287,10 +285,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2432,
-        112
+        848,
+        96
       ],
-      "id": "7ad4b3ba-4919-49c5-bd5e-b43840c38796",
+      "id": "6223fd36-9b48-4873-8d5e-f1ea467d3b30",
       "name": "Code in JavaScript"
     },
     {
@@ -300,10 +298,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1440,
-        96
+        -144,
+        80
       ],
-      "id": "fb21f85c-cb2b-48c8-9eba-ed54d507cc0e",
+      "id": "a7040c19-1477-432c-899e-321f789d25f7",
       "name": "Code in JavaScript1"
     },
     {
@@ -311,10 +309,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        2240,
-        112
+        656,
+        96
       ],
-      "id": "c2e1bc24-35d5-43ab-be43-ef70d68c979d",
+      "id": "ae072881-da25-4472-b159-a8e9c18dffce",
       "name": "Merge"
     },
     {
@@ -324,10 +322,10 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        336,
-        96
+        -1248,
+        80
       ],
-      "id": "c19f7a3e-7e53-4667-bdd6-c49c559081a9",
+      "id": "727df2f8-cad8-4fc2-a880-57256815f425",
       "name": "Wait",
       "webhookId": "a5060291-ba51-45d4-9721-3381c6959d8c",
       "alwaysOutputData": true
@@ -359,10 +357,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        2048,
-        192
+        464,
+        224
       ],
-      "id": "aa021d7b-7794-4c7a-a0aa-ef3969d17941",
+      "id": "e249a22e-844e-4aa0-a7c1-25dec127f435",
       "name": "archive",
       "alwaysOutputData": true
     },
@@ -390,10 +388,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        2032,
-        0
+        464,
+        -16
       ],
-      "id": "57df071f-2bbe-4fa9-8045-be353fe800ec",
+      "id": "ccff4ab5-7fcf-4365-bd3d-81cefa2eda49",
       "name": "trash",
       "alwaysOutputData": true
     },
@@ -409,7 +407,7 @@
           "conditions": [
             {
               "id": "ea604468-f4bd-4eb5-8f4e-9a95c81d10fa",
-              "leftValue": "={{ $('HTTP Request: Fetch Unread Email IDs').item.json.response.status }}",
+              "leftValue": "={{ $('HTTP Request: Get Message Details').item.json.response.status }}",
               "rightValue": 401,
               "operator": {
                 "type": "number",
@@ -418,7 +416,7 @@
             },
             {
               "id": "0ccfc38f-2559-40a7-8286-bb90c8108c0d",
-              "leftValue": "={{ $('HTTP Request: Fetch Unread Email IDs').item.json.response.status }}",
+              "leftValue": "={{ $('HTTP Request: Get Message Details').item.json.response.status }}",
               "rightValue": "403",
               "operator": {
                 "type": "string",
@@ -434,10 +432,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        1600,
-        96
+        16,
+        80
       ],
-      "id": "1ba6b7f0-267c-4231-8096-24b4df8b77b8",
+      "id": "b0366347-4f50-4219-8ee5-8371aaa79674",
       "name": "If"
     },
     {
@@ -450,11 +448,11 @@
           "parameters": [
             {
               "name": "client_id",
-              "value": "YOUR_CLIENT_ID_HERE"
+              "value": "YOUR_GOOGLE_CLIENT_ID"
             },
             {
               "name": "client_secret",
-              "value": "YOUR_CLIENT_SECRET_HERE"
+              "value": "YOUR_GOOGLE_CLIENT_SECRET"
             },
             {
               "name": "refresh_token",
@@ -471,33 +469,34 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        1744,
-        -128
+        128,
+        -272
       ],
-      "id": "15390de6-076a-465b-87f9-09c8961c0dba",
+      "id": "b654c99d-bc32-406c-9fdd-ec6752ab2f42",
       "name": "Refresh Token",
-      "alwaysOutputData": true,
+      "alwaysOutputData": false,
+      "retryOnFail": true,
       "onError": "continueRegularOutput"
     },
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "18d22039-3ab1-42b9-af7c-3c3b72d64157",
+        "path": "YOUR_WEBHOOK_ID",
         "authentication": "headerAuth",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -1120,
-        96
+        -2704,
+        80
       ],
-      "id": "2de8a0c2-a894-46d8-9ea5-a41f4690c465",
+      "id": "d0f7485e-1724-45e3-9979-3d4b81721541",
       "name": "Tally submission",
-      "webhookId": "18d22039-3ab1-42b9-af7c-3c3b72d64157",
+      "webhookId": "YOUR_WEBHOOK_ID",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "NrhhGiVCnzE4sm0O",
+          "id": "Xf6MLoJSLM9SIzCL",
           "name": "Header Auth account"
         }
       }
@@ -512,11 +511,11 @@
           "parameters": [
             {
               "name": "client_id",
-              "value": "YOUR_CLIENT_ID_HERE"
+              "value": "YOUR_GOOGLE_CLIENT_ID"
             },
             {
               "name": "client_secret",
-              "value": "YOUR_CLIENT_SECRET_HERE"
+              "value": "GYOUR_GOOGLE_CLIENT_SECRET"
             },
             {
               "name": "refresh_token",
@@ -533,15 +532,30 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -400,
-        96
+        -1984,
+        80
       ],
-      "id": "d5f0f74d-1414-441a-981d-83c852841d7b",
-      "name": "HTTP Request: Refresh Google Access Token"
+      "id": "b11dc395-a732-422f-9d03-ff5988267251",
+      "name": "HTTP Request: Refresh Google Access Token",
+      "retryOnFail": true,
+      "alwaysOutputData": true
     },
     {
       "parameters": {
-        "url": "=https://gmail.googleapis.com/gmail/v1/users/me/messages/ {{ $json.messages[0].id }}",
+        "url": "=https://gmail.googleapis.com/gmail/v1/users/me/messages",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "maxResults",
+              "value": "100"
+            },
+            {
+              "name": "q",
+              "value": "in:inbox"
+            }
+          ]
+        },
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -551,15 +565,32 @@
             }
           ]
         },
-        "options": {}
+        "options": {
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "pageToken",
+                    "value": "={{ $response.body.nextPageToken }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ !$response.body.nextPageToken }}",
+              "limitPagesFetched": true,
+              "requestInterval": 700
+            }
+          }
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -112,
-        96
+        -1696,
+        80
       ],
-      "id": "1ebf918f-4366-4d99-8459-b7202e07446e",
+      "id": "9121a06b-0cdf-4e5c-b43f-17b273ecd3bc",
       "name": "HTTP Request: Fetch Unread Email IDs",
       "alwaysOutputData": true
     },
@@ -571,10 +602,10 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        112,
-        96
+        -1472,
+        80
       ],
-      "id": "e8162088-77cc-4fbe-8839-4126276cdd37",
+      "id": "7b463dcc-15f0-4b84-b88f-5077eb73b4b2",
       "name": "Unpacker: Email List to Individual Items",
       "alwaysOutputData": true
     },
@@ -602,12 +633,12 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        544,
-        96
+        -1040,
+        80
       ],
-      "id": "e61f323c-b1a5-4a43-b372-26a575de35b3",
+      "id": "7e41db93-afa3-49aa-873e-d85522db66a4",
       "name": "HTTP Request: Get Message Details",
-      "alwaysOutputData": true
+      "alwaysOutputData": false
     },
     {
       "parameters": {
@@ -633,10 +664,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        720,
-        96
+        -864,
+        80
       ],
-      "id": "e2d3711b-75ac-45a7-815b-a20cebbe7bce",
+      "id": "e28f0bc4-6df3-4d5c-9b49-ed7617f6e226",
       "name": "Edit Fields",
       "alwaysOutputData": true
     },
@@ -664,10 +695,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1264,
-        96
+        -320,
+        80
       ],
-      "id": "10a9f8ee-2e1b-4fd4-a547-dadb50d3d897",
+      "id": "d4ea2502-519f-4221-9706-675815782fa1",
       "name": "Edit Fields1",
       "alwaysOutputData": true
     }
@@ -756,11 +787,6 @@
             "index": 0
           }
         ]
-      ]
-    },
-    "Update a database page1": {
-      "main": [
-        []
       ]
     },
     "Code in JavaScript1": {
@@ -929,18 +955,14 @@
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
-    "timeSavedMode": "fixed",
-    "errorWorkflow": "CdWpp01CAJ77XYto",
-    "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false,
-    "timeSavedPerExecution": 10
+    "availableInMCP": true
   },
-  "versionId": "bbecd652-9ddd-419f-ac4c-2bcc66e3f776",
+  "versionId": "62fe82ca-cafe-4976-9085-000966d4bdd1",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "YOUR_INSTANCE_ID"
+    "instanceId": "YOUR_N8N_INSTANCE_ID"
   },
   "nodeGroups": [],
-  "id": "Wk9qvcBcrSpDw5lt",
+  "id": "WD0BdKtSPRXetXFj",
   "tags": []
 }
