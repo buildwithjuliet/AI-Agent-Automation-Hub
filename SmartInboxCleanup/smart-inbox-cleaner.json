@@ -4,7 +4,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Please categorize this enail:\n\nSubject: {{ $json.payload.headers.find(h => h.name === 'Subject').value }}\n\nfrom: {{ $json.payload.headers.find(h => h.name === 'From').value }}\n\ncontent:{{ $json.snippet }} \n\nTHRASH_KEYWORDS:{{ $('Tally submission').item.json.body.data.fields[3].value }}\n\nKEEP_KEYWORDS: {{ $('Tally submission').item.json.body.data.fields[2].value }}\n\nOutput ONLY the word 'trash' or 'archive\n\n",
+        "text": "=Please categorize this email:\n\nSubject: {{ $json.subject }}\n\nfrom: {{ $json.from }}\n\ncontent:{{ $json.snippet }} \n\nTHRASH_KEYWORDS:{{ $('Tally submission').item.json.body.data.fields[3].value }}\n\nKEEP_KEYWORDS: {{ $('Tally submission').item.json.body.data.fields[2].value }}\n\nOutput ONLY the word 'trash' or 'archive\n\n",
         "messages": {
           "messageValues": [
             {
@@ -13,19 +13,19 @@
           ]
         },
         "batching": {
-          "batchSize": 3,
-          "delayBetweenBatches": 5000
+          "batchSize": 12,
+          "delayBetweenBatches": 1000
         }
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.9,
       "position": [
-        -640,
+        -688,
         80
       ],
       "id": "b0828dec-17da-4e07-9426-d6e94c309251",
       "name": "Basic LLM Chain",
-      "retryOnFail": false,
+      "retryOnFail": true,
       "waitBetweenTries": 5000,
       "alwaysOutputData": true,
       "maxTries": 2
@@ -36,48 +36,48 @@
           "values": [
             {
               "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "7759cc4b-e3c7-4f68-9949-3865e4d5a8e8",
+                    "leftValue": "={{ $json.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "trash"
+                  }
+                ],
                 "options": {
                   "caseSensitive": false,
                   "leftValue": "",
                   "typeValidation": "strict",
                   "version": 3
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.action }}",
-                    "rightValue": "trash",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    },
-                    "id": "7759cc4b-e3c7-4f68-9949-3865e4d5a8e8"
-                  }
-                ],
-                "combinator": "and"
+                }
               },
               "renameOutput": true,
               "outputKey": "Trash"
             },
             {
               "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "f0b97adc-9058-4072-adb1-85d71e78943e",
+                    "leftValue": "={{ $json.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "archive"
+                  }
+                ],
                 "options": {
                   "caseSensitive": false,
                   "leftValue": "",
                   "typeValidation": "strict",
                   "version": 3
-                },
-                "conditions": [
-                  {
-                    "id": "f0b97adc-9058-4072-adb1-85d71e78943e",
-                    "leftValue": "={{ $json.action }}",
-                    "rightValue": "archive",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ],
-                "combinator": "and"
+                }
               },
               "renameOutput": true,
               "outputKey": "Archive"
@@ -161,12 +161,12 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        -2448,
+        -2608,
         80
       ],
       "id": "3a34a68f-efb0-4276-b3e5-fdf2c630a9f4",
       "name": "Get many database pages",
-      "retryOnFail": false,
+      "retryOnFail": true,
       "waitBetweenTries": 3000,
       "alwaysOutputData": true,
       "credentials": {
@@ -203,7 +203,7 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        -2224,
+        -2368,
         80
       ],
       "id": "59a4d94b-0e01-448e-b5de-fb090e563229",
@@ -215,32 +215,6 @@
         "notionApi": {
           "id": "VABxZHZ9wOaMHU7V",
           "name": "Notion account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "sendHTML": true,
-        "subject": "Your inbox just got a full reset. 🧹",
-        "htmlContent": "=<p>Hi {{ $json.userName }},</p>\n<p>We went through everything and sorted it out for you. In total, we processed {{ $json.totalProcessed }} emails.</p>\n<p>If this saved you some stress today, I'd love to hear about it. Takes less than 2 minutes:</p>\n\n<p>\n  <a href=\"https://testimonial.to/smartinboxcleanup\" style=\"background-color: #E46F03; color: #E5DCD3; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;\">\n    Leave a quick review →\n  </a>\n</p>\n\n<p>For any issues, reach me at support@buildwithjuliet.com</p>\n<p>Best,<br>\nbuildwithjuliet</p>",
-        "sender": "kosy@buildwithjuliet.com",
-        "receipients": "={{ $json.userEmail }}",
-        "additionalFields": {},
-        "requestOptions": {}
-      },
-      "type": "n8n-nodes-base.sendInBlue",
-      "typeVersion": 1,
-      "position": [
-        1056,
-        96
-      ],
-      "id": "9111f22f-b526-4a73-a6d3-f3a6b41f241b",
-      "name": "Send a transactional email",
-      "retryOnFail": true,
-      "credentials": {
-        "sendInBlueApi": {
-          "id": "1YO883B9RfJfWkIJ",
-          "name": "Brevo account"
         }
       }
     },
@@ -322,7 +296,7 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        -1248,
+        -1344,
         80
       ],
       "id": "727df2f8-cad8-4fc2-a880-57256815f425",
@@ -488,7 +462,7 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -2704,
+        -2880,
         80
       ],
       "id": "d0f7485e-1724-45e3-9979-3d4b81721541",
@@ -515,7 +489,7 @@
             },
             {
               "name": "client_secret",
-              "value": "GYOUR_GOOGLE_CLIENT_SECRET"
+              "value": "YOUR_GOOGLE_CLIENT_SECRET"
             },
             {
               "name": "refresh_token",
@@ -532,7 +506,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -1984,
+        -2112,
         80
       ],
       "id": "b11dc395-a732-422f-9d03-ff5988267251",
@@ -579,7 +553,8 @@
               "paginationCompleteWhen": "other",
               "completeExpression": "={{ !$response.body.nextPageToken }}",
               "limitPagesFetched": true,
-              "requestInterval": 700
+              "maxRequests": 1000,
+              "requestInterval": 500
             }
           }
         }
@@ -587,7 +562,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -1696,
+        -1840,
         80
       ],
       "id": "9121a06b-0cdf-4e5c-b43f-17b273ecd3bc",
@@ -602,7 +577,7 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        -1472,
+        -1584,
         80
       ],
       "id": "7b463dcc-15f0-4b84-b88f-5077eb73b4b2",
@@ -624,8 +599,7 @@
         "options": {
           "batching": {
             "batch": {
-              "batchSize": 1,
-              "batchInterval": 2000
+              "batchSize": 12
             }
           }
         }
@@ -633,7 +607,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -1040,
+        -1136,
         80
       ],
       "id": "7e41db93-afa3-49aa-873e-d85522db66a4",
@@ -645,47 +619,16 @@
         "assignments": {
           "assignments": [
             {
-              "id": "ecef063d-5607-47bb-aad9-27487d77e3fd",
-              "name": "id",
-              "value": "={{ $json.id }}",
-              "type": "string"
-            },
-            {
-              "id": "9350ed45-1f0a-4989-a7dc-bee58440a36f",
-              "name": "threadId",
-              "value": "={{ $json.threadId }}",
-              "type": "string"
-            }
-          ]
-        },
-        "includeOtherFields": true,
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -864,
-        80
-      ],
-      "id": "e28f0bc4-6df3-4d5c-9b49-ed7617f6e226",
-      "name": "Edit Fields",
-      "alwaysOutputData": true
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
               "id": "1768bf62-1747-4a51-a73b-ccd96e5e3bd7",
               "name": "id",
-              "value": "={{ $('Edit Fields').item.json.id }}",
-              "type": "string"
+              "type": "string",
+              "value": "={{ $('Trim Email Data').item.json.id }}"
             },
             {
               "id": "bb290217-e248-4216-9d1c-2c1f7d25dbc5",
               "name": "threadId",
-              "value": "={{ $('Edit Fields').item.json.threadId }}",
-              "type": "string"
+              "type": "string",
+              "value": "={{ $('Trim Email Data').item.json.threadId }}"
             }
           ]
         },
@@ -701,6 +644,79 @@
       "id": "d4ea2502-519f-4221-9706-675815782fa1",
       "name": "Edit Fields1",
       "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "sendHTML": true,
+        "subject": "Your inbox just got a full reset. 🧹",
+        "htmlContent": "=<p>Hi {{ $json.userName }},</p>\n<p>We went through everything and sorted it out for you. In total, we processed {{ $json.totalProcessed }} emails.</p>\n<p>If this saved you some stress today, I'd love to hear about it. Takes less than 2 minutes:</p>\n\n<p>\n  <a href=\"https://testimonial.to/smartinboxcleanup\" style=\"background-color: #E46F03; color: #E5DCD3; padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;\">\n    Leave a quick review →\n  </a>\n</p>\n\n<p>For any issues, reach me at support@buildwithjuliet.com</p>\n<p>Best,<br>\nbuildwithjuliet</p>",
+        "sender": "kosy@buildwithjuliet.com",
+        "receipients": "={{ $json.userEmail }}",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.sendInBlue",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        96
+      ],
+      "id": "9111f22f-b526-4a73-a6d3-f3a6b41f241b",
+      "name": "Send a transactional email",
+      "retryOnFail": true,
+      "credentials": {
+        "sendInBlueApi": {
+          "id": "1YO883B9RfJfWkIJ",
+          "name": "Brevo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "id",
+              "type": "string",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "id": "2",
+              "name": "threadId",
+              "type": "string",
+              "value": "={{ $json.threadId }}"
+            },
+            {
+              "id": "3",
+              "name": "subject",
+              "type": "string",
+              "value": "={{ $json.payload.headers.find(h => h.name === 'Subject')?.value || '(no subject)' }}"
+            },
+            {
+              "id": "4",
+              "name": "from",
+              "type": "string",
+              "value": "={{ $json.payload.headers.find(h => h.name === 'From')?.value || '(unknown sender)' }}"
+            },
+            {
+              "id": "5",
+              "name": "snippet",
+              "type": "string",
+              "value": "={{ $json.snippet }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a978893c-46c7-4910-a3ee-88fa28d887ae",
+      "name": "Trim Email Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -928,
+        80
+      ]
     }
   ],
   "pinData": {},
@@ -761,17 +777,6 @@
         [
           {
             "node": "HTTP Request: Refresh Google Access Token",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Send a transactional email": {
-      "main": [
-        [
-          {
-            "node": "Update a database page1",
             "type": "main",
             "index": 0
           }
@@ -917,33 +922,44 @@
         ]
       ]
     },
-    "HTTP Request: Get Message Details": {
-      "main": [
-        [
-          {
-            "node": "Edit Fields",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Edit Fields": {
-      "main": [
-        [
-          {
-            "node": "Basic LLM Chain",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Edit Fields1": {
       "main": [
         [
           {
             "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a transactional email": {
+      "main": [
+        [
+          {
+            "node": "Update a database page1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request: Get Message Details": {
+      "main": [
+        [
+          {
+            "node": "Trim Email Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trim Email Data": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
             "type": "main",
             "index": 0
           }
@@ -955,11 +971,18 @@
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
-    "availableInMCP": true
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "NsDO9kR6OWCfGqaX",
+    "callerPolicy": "workflowsFromSameOwner",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": false
   },
-  "versionId": "62fe82ca-cafe-4976-9085-000966d4bdd1",
+  "versionId": "5af30bc8-582c-497c-b5cb-5de6c1fbe32c",
   "meta": {
     "templateCredsSetupCompleted": true,
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
     "instanceId": "YOUR_N8N_INSTANCE_ID"
   },
   "nodeGroups": [],
