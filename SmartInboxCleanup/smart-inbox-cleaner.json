@@ -13,22 +13,23 @@
           ]
         },
         "batching": {
-          "batchSize": 12,
+          "batchSize": 25,
           "delayBetweenBatches": 1000
         }
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.9,
       "position": [
-        -688,
-        80
+        -672,
+        112
       ],
       "id": "b0828dec-17da-4e07-9426-d6e94c309251",
       "name": "Basic LLM Chain",
       "retryOnFail": true,
       "waitBetweenTries": 5000,
       "alwaysOutputData": true,
-      "maxTries": 2
+      "maxTries": 2,
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -161,8 +162,8 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        -2608,
-        80
+        -2944,
+        32
       ],
       "id": "3a34a68f-efb0-4276-b3e5-fdf2c630a9f4",
       "name": "Get many database pages",
@@ -203,8 +204,8 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        -2368,
-        80
+        -2640,
+        144
       ],
       "id": "59a4d94b-0e01-448e-b5de-fb090e563229",
       "name": "Update a database page",
@@ -240,7 +241,7 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        1280,
+        1376,
         96
       ],
       "id": "b83639de-fb6a-4bc6-82e3-2d184c3c142c",
@@ -254,12 +255,12 @@
     },
     {
       "parameters": {
-        "jsCode": "// Get all items that arrived at this node via the Merge node\nconst allItems = $input.all(); \nconst dbData = $('Get many database pages').first().json;\n\n// Count the items directly\nconst total = allItems.length;\n\nreturn [{\n  json: {\n    totalProcessed: total,\n    userName: dbData.property_name,\n    userEmail: dbData.property_email,\n    notionId: dbData.id\n  }\n}];"
+        "jsCode": "// Count the TRUE total from the original unpacked email list,\n// since this now fires once after ALL batches finish looping,\n// not per batch.\nconst total = $('Unpacker: Email List to Individual Items').all().length;\nconst dbData = $('Get many database pages').first().json;\n\nreturn [{\n  json: {\n    totalProcessed: total,\n    userName: dbData.property_name,\n    userEmail: dbData.property_email,\n    notionId: dbData.id\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        848,
+        944,
         96
       ],
       "id": "6223fd36-9b48-4873-8d5e-f1ea467d3b30",
@@ -267,13 +268,13 @@
     },
     {
       "parameters": {
-        "jsCode": "return items.map(item => {\n  return {\n    json: {\n      action: item.json.text, \n      id: item.json.id,\n      threadId: item.json.threadId,\n      access_token: item.json.access_token || $('HTTP Request: Refresh Google Access Token').item.json.access_token || $('Notion: Fetch User Credentials').item.json.property_acess_token,\n      notionPageId: item.json.id \n    }\n  };\n});"
+        "jsCode": "return items.map(item => {\n  return {\n    json: {\n      action: item.json.text, \n      id: item.json.id,\n      threadId: item.json.threadId,\n      access_token: item.json.access_token || $('Refresh Token - Fresh').last().json.access_token || $('Notion: Fetch User Credentials').item.json.property_acess_token,\n      notionPageId: item.json.id \n    }\n  };\n});"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         -144,
-        80
+        0
       ],
       "id": "a7040c19-1477-432c-899e-321f789d25f7",
       "name": "Code in JavaScript1"
@@ -283,7 +284,7 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        656,
+        720,
         96
       ],
       "id": "ae072881-da25-4472-b159-a8e9c18dffce",
@@ -296,8 +297,8 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        -1344,
-        80
+        -1360,
+        96
       ],
       "id": "727df2f8-cad8-4fc2-a880-57256815f425",
       "name": "Wait",
@@ -323,7 +324,7 @@
         "options": {
           "batching": {
             "batch": {
-              "batchSize": 1
+              "batchSize": 3
             }
           }
         }
@@ -354,7 +355,7 @@
         "options": {
           "batching": {
             "batch": {
-              "batchSize": 1
+              "batchSize": 3
             }
           }
         }
@@ -362,7 +363,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        464,
+        448,
         -16
       ],
       "id": "ccff4ab5-7fcf-4365-bd3d-81cefa2eda49",
@@ -406,7 +407,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        16,
+        64,
         80
       ],
       "id": "b0366347-4f50-4219-8ee5-8371aaa79674",
@@ -443,8 +444,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        128,
-        -272
+        240,
+        -288
       ],
       "id": "b654c99d-bc32-406c-9fdd-ec6752ab2f42",
       "name": "Refresh Token",
@@ -455,19 +456,19 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "YOUR_WEBHOOK_ID",
+        "path": "YOUR_TALLY_WEBHOOK_ID",
         "authentication": "headerAuth",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -2880,
-        80
+        -3280,
+        112
       ],
       "id": "d0f7485e-1724-45e3-9979-3d4b81721541",
       "name": "Tally submission",
-      "webhookId": "YOUR_WEBHOOK_ID",
+      "webhookId": "YOUR_TALLY_WEBHOOK_ID",
       "credentials": {
         "httpHeaderAuth": {
           "id": "Xf6MLoJSLM9SIzCL",
@@ -506,8 +507,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -2112,
-        80
+        -2352,
+        -48
       ],
       "id": "b11dc395-a732-422f-9d03-ff5988267251",
       "name": "HTTP Request: Refresh Google Access Token",
@@ -562,8 +563,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -1840,
-        80
+        -2096,
+        160
       ],
       "id": "9121a06b-0cdf-4e5c-b43f-17b273ecd3bc",
       "name": "HTTP Request: Fetch Unread Email IDs",
@@ -577,8 +578,8 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        -1584,
-        80
+        -1856,
+        -32
       ],
       "id": "7b463dcc-15f0-4b84-b88f-5077eb73b4b2",
       "name": "Unpacker: Email List to Individual Items",
@@ -592,7 +593,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $('HTTP Request: Refresh Google Access Token').item.json.access_token }}"
+              "value": "=Bearer {{ $('Refresh Token - Fresh').last().json.access_token }}"
             }
           ]
         },
@@ -601,14 +602,15 @@
             "batch": {
               "batchSize": 12
             }
-          }
+          },
+          "timeout": 30000
         }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -1136,
-        80
+        -1120,
+        144
       ],
       "id": "7e41db93-afa3-49aa-873e-d85522db66a4",
       "name": "HTTP Request: Get Message Details",
@@ -639,7 +641,7 @@
       "typeVersion": 3.4,
       "position": [
         -320,
-        80
+        144
       ],
       "id": "d4ea2502-519f-4221-9706-675815782fa1",
       "name": "Edit Fields1",
@@ -658,7 +660,7 @@
       "type": "n8n-nodes-base.sendInBlue",
       "typeVersion": 1,
       "position": [
-        1056,
+        1168,
         96
       ],
       "id": "9111f22f-b526-4a73-a6d3-f3a6b41f241b",
@@ -714,9 +716,71 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -928,
-        80
+        -896,
+        64
       ]
+    },
+    {
+      "parameters": {},
+      "id": "45757490-6fb6-42c8-8291-e6cc062b7419",
+      "name": "Limit To One",
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -1232,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://oauth2.googleapis.com/token",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "client_id",
+              "value": "YOUR_GOOGLE_CLIENT_ID"
+            },
+            {
+              "name": "client_secret",
+              "value": "YOUR_GOOGLE_CLIENT_SECRET"
+            },
+            {
+              "name": "refresh_token",
+              "value": "={{ $('Get many database pages').item.json.property_refresh_token }}"
+            },
+            {
+              "name": "grant_type",
+              "value": "refresh_token"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "003f53ed-f113-4474-b503-d56be4e210ca",
+      "name": "Refresh Token - Fresh",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -960,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 100,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1600,
+        80
+      ],
+      "id": "4a0fcfba-840d-4f8e-98cc-83e39d1ea8f9",
+      "name": "Loop Over Items"
     }
   ],
   "pinData": {},
@@ -805,22 +869,16 @@
         ]
       ]
     },
-    "Merge": {
-      "main": [
-        [
-          {
-            "node": "Code in JavaScript",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Wait": {
       "main": [
         [
           {
             "node": "HTTP Request: Get Message Details",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Limit To One",
             "type": "main",
             "index": 0
           }
@@ -915,7 +973,7 @@
       "main": [
         [
           {
-            "node": "Wait",
+            "node": "Loop Over Items",
             "type": "main",
             "index": 0
           }
@@ -965,6 +1023,46 @@
           }
         ]
       ]
+    },
+    "Limit To One": {
+      "main": [
+        [
+          {
+            "node": "Refresh Token - Fresh",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -975,10 +1073,9 @@
     "timeSavedMode": "fixed",
     "errorWorkflow": "NsDO9kR6OWCfGqaX",
     "callerPolicy": "workflowsFromSameOwner",
-    "saveExecutionProgress": true,
-    "saveManualExecutions": false
+    "saveExecutionProgress": true
   },
-  "versionId": "5af30bc8-582c-497c-b5cb-5de6c1fbe32c",
+  "versionId": "e153f9c0-9957-4852-b4d0-0c5f01757688",
   "meta": {
     "templateCredsSetupCompleted": true,
     "aiBuilderAssisted": true,
