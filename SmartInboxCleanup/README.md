@@ -49,7 +49,7 @@ For the "System Reliability" or final overview section:
 This workflow intentionally takes time at two points: fetching message details, and AI categorization. Both delays are deliberate. Fetching message details is paced with a short delay between each request so Gmail's API doesn't rate limit or flag the account for too many rapid calls. AI categorization runs in small batches with a pause between each one, keeping the model's responses stable and reliable instead of firing everything at once. The tradeoff is a few extra minutes for a full inbox, in exchange for zero failed runs and no lost emails. 
 **Real run example:** 75 emails processed end to end in 6 minutes 21 seconds, no errors, no rate limiting.
 
-![Updated Architecture v2](./path-to-that-folder/SmartInboxCleanup-v2-architecture.png.png)
+![Updated Architecture v2](SmartInboxCleanup/SmartInboxCleanup-v2-architecture.png.png)
 
 # SmartInboxCleanup: Handling a Real 18,000+ Email Inbox
 
