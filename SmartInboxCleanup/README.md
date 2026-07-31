@@ -100,3 +100,5 @@ A real user connected an inbox with an estimated 18,352 emails, far beyond anyth
 - The contrast between a 3-minute-54-second run and a multi-attempt process spanning over 24 hours combined is itself the clearest evidence that runtime scales with more than just email count.
 - A future improvement worth exploring: splitting extremely large inboxes across multiple separate execution runs by design (not just batches within one run), so no single execution has to stay alive for many hours at a time.
 - This inbox size is a genuine outlier. Real numbers from this test inform honest customer-facing expectations, not the product's general performance claim, most inboxes will land much closer to the fast end.
+
+Try it Live: https://smartinboxcleanup.carrd.co/
