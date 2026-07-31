@@ -1,0 +1,195 @@
+{
+  "name": "SmartInboxTriage",
+  "description": "An email management agent that flags urgent emails, maintains zero inbox, replies to only important emails based on resources given to it",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": { "item": [{ "mode": "everyMinute" }] },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [-1392, 256],
+      "id": "08bfe5d4-1f11-45d0-99e9-58c35f207860",
+      "name": "Gmail Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sender:{{ $json.From }}\nSubject:{{ $json.Subject }}\nEmail Body: {{ $json.snippet }}",
+        "options": {
+          "systemMessage": "You are the Executive AI Assistant and Chief of Staff for Kosy Juliet (Brand: BuildWithJuliet). Your objective is total Inbox Zero, precision, and high-level professional communication.\n\nHTML SPACING MANDATE (STRICT)\nYou are an HTML email generator. You must structure output using these exact inline styles for consistent professional spacing:\n\nGREETING: <p style=\"margin:0 0 16px 0;\">Dear [Name],</p>\n\nBODY PARAGRAPHS: <p style=\"margin:0 0 16px 0;\">[Content]</p>\n\nSIGN-OFF: <p style=\"margin:0;\">Best regards,<br>BuildWithJuliet</p>\n\nDECISION MATRIX\nExecute these steps in order:\nURGENT AND HIGH VALUE (Partnerships, Media, Job Offers, Meeting Requests from Real Humans, Actionable items requiring Kosy's attention, Emails from real humans asking about services):\n\nApply Label: Urgent for Juliet\nSlack Ping: 🚨 URGENT: [Category] - [Sender] - [Subject]\nDO NOT REPLY\nArchive: Remove INBOX label\n\nCALENDAR AND MEETING UPDATES from real humans only:\n\nSlack Ping: 📅 Meeting Update: [Subject] - [Sender]\nArchive: Remove INBOX label\n\nGENERAL BUSINESS (Use Knowledge Base):\n\nCross-reference Google Doc\nIf info present: Draft HTML email using Spacing Mandate\nIf info missing: Reply stating \"Our team is evaluating your message and will respond within 24 hours.\" then Slack Ping: 📬 New Lead from [Sender]\nArchive: Remove INBOX label\n\nCLUTTER, NEWSLETTERS, SAAS NOTIFICATIONS, AUTOMATED EMAILS, NO-REPLY SENDERS:\n\nArchive: Remove INBOX label\nNO Slack notification\nNO reply\n\nOPERATIONAL RULES\nYou are an assistant for Kosy Juliet. Always refer to the owner as Kosy or Kosy Juliet. Never use Julie or any shortened version of the name.\nDO NOT reply to newsletters, automated emails, marketing emails, no-reply senders, or any email that does not come from a real identifiable human being.\nDO NOT echo the sender's text back to them.\nDO NOT wrap output in Markdown code blocks.\nArchive-Last Rule: The Remove INBOX label action must always be the final step.\nOnly send a Slack notification for Urgent for Juliet emails, meeting updates from real humans, and new unresolvable leads. Never send Slack for anything else.\nTone: High-level, warm, concise, and professional. Sign off every email as Best regards, BuildWithJuliet.",
+          "maxIterations": 15
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [-80, -16],
+      "id": "578edb68-51c6-41e8-8e01-d8dcab2d090c",
+      "name": "AI Agent",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.threadId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [-224, 240],
+      "id": "14306bcb-bb52-4dad-9293-79296919ee9c",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "https://docs.google.com/document/d/1d3E9jpaf95Ox9vxGORDIKkTt3CZpui0ybKuDg3pMvPU/edit?usp=sharing"
+      },
+      "type": "n8n-nodes-base.googleDocsTool",
+      "typeVersion": 2,
+      "position": [-64, 224],
+      "id": "c2161eda-416c-41bc-b602-43457fab2d4d",
+      "name": "Get a document in Google Docs"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": ["Label_6813616298827576395"]
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [64, 224],
+      "id": "c1283e7d-e57d-4841-bd63-5bc0123f1eee",
+      "name": "Add label to message in Gmail"
+    },
+    {
+      "parameters": {
+        "select": "user",
+        "user": { "__rl": true, "value": "U0A8WD5V1D0", "mode": "list", "cachedResultName": "chukwukaelojuliet" },
+        "text": "= @<U0A8WD5V1D0> 🚨 *New High-Value Lead Escalation*\n\n*From:* {{ $json.From }}\n*Subject:* {{ $json.Subject }}\n*Snippet:* > {{ $json.snippet }}\n\n👉 *Open Thread in Gmail:* https://mail.google.com/mail/u/0/#inbox/{{ $json.threadId }}",
+        "otherOptions": { "link_names": true }
+      },
+      "type": "n8n-nodes-base.slackTool",
+      "typeVersion": 2.4,
+      "position": [192, 224],
+      "id": "f6c87454-615a-494c-b112-d337a9b72010",
+      "name": "Send a message in Slack"
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "get",
+        "threadId": "={{ $json.threadId }}",
+        "options": { "returnOnlyMessages": true }
+      },
+      "id": "be6a95c8-4c1c-4339-87e0-225af681db2a",
+      "name": "Get Thread",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [-1088, 256]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3 },
+          "conditions": [
+            { "leftValue": "={{ $json.labels[0].name }}", "rightValue": "SENT", "operator": { "type": "string", "operation": "equals" }, "id": "fc29c008-8da3-4b63-b1ab-1f9ac70e002d" },
+            { "id": "c7b3cbef-b2c2-4a47-83ab-565e9b1aedf8", "leftValue": "={{ $json.snippet }}", "rightValue": "unsubscribe", "operator": { "type": "string", "operation": "contains" } }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "4b785c57-7bc6-4bfa-92b5-54c0109c96cf",
+      "name": "Check If Already Replied",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [-816, 256]
+    },
+    {
+      "parameters": {},
+      "id": "540ee03b-d2ef-4861-a824-a07c5d356916",
+      "name": "Stop - Already Replied",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [-384, 448]
+    },
+    {
+      "parameters": {
+        "operation": "removeLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": ["INBOX"]
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [448, 224],
+      "id": "7b0c5a59-4c98-4dd8-acaa-f9d970753a58",
+      "name": "Remove label from message in Gmail"
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $json.id }}",
+        "message": "={{ $fromAI('message') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [320, 224],
+      "id": "a62e5589-3603-42ba-97de-b6ee7bc33de4",
+      "name": "Reply to a message in Gmail"
+    },
+    {
+      "parameters": {
+        "operation": "removeLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": "={{ $('Gmail Trigger').item.json.labels[1].name }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [-112, 448],
+      "id": "de444b25-717f-40a8-8133-b66fbf15493d",
+      "name": "Remove label from message"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [-400, 224],
+      "id": "f7077840-23a7-430f-ac41-59b302953bbc",
+      "name": "Groq Chat Model"
+    },
+    {
+      "parameters": {
+        "calendar": { "__rl": true, "mode": "list", "value": "" },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [560, 224],
+      "id": "54aac609-a462-4f3e-a6ac-556818bb45f8",
+      "name": "Create an event in Google Calendar"
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": { "main": [[{ "node": "Get Thread", "type": "main", "index": 0 }]] },
+    "Simple Memory": { "ai_memory": [[{ "node": "AI Agent", "type": "ai_memory", "index": 0 }]] },
+    "Get a document in Google Docs": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
+    "Add label to message in Gmail": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
+    "Send a message in Slack": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
+    "Get Thread": { "main": [[{ "node": "Check If Already Replied", "type": "main", "index": 0 }]] },
+    "Check If Already Replied": { "main": [[{ "node": "Stop - Already Replied", "type": "main", "index": 0 }], [{ "node": "AI Agent", "type": "main", "index": 0 }]] },
+    "Remove label from message in Gmail": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
+    "Reply to a message in Gmail": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
+    "Stop - Already Replied": { "main": [[{ "node": "Remove label from message", "type": "main", "index": 0 }]] },
+    "Groq Chat Model": { "ai_languageModel": [[{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }]] },
+    "Create an event in Google Calendar": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] }
+  }
+}
