@@ -103,8 +103,9 @@ A real user connected an inbox with an estimated 18,352 emails, far beyond anyth
 
 - ![SmartInboxCleanup error workflow](./SmartInboxcleanup%20error%20workflow%20v2.png)
 
-- New: self-healing error handling for SmartInboxCleanup
-Why this exists
+## New: self-healing error handling for SmartInboxCleanup
+
+### Why this exists
 
 Sometimes SmartInboxCleanup fails for reasons that have nothing to do with my code at all, a brief network blip, Google's servers being slow to respond, a DNS lookup that times out for a second. These aren't bugs, the internet is just unreliable sometimes.
 
@@ -112,21 +113,24 @@ Before this update, a failure like that meant the customer's cleanup just sat th
 
 So I built a second workflow that watches SmartInboxCleanup and reacts automatically the moment something fails, no need for me to be online.
 
-How it works
+### How it works
 
 When a failure happens, the error workflow immediately checks: is this the kind of failure that's likely to fix itself if tried again, or is it something that actually needs a human?
 
-Likely to fix itself (timeouts, DNS errors, rate limits, connection drops): the workflow automatically resumes the customer's cleanup on its own, right where it left off. The customer gets a quick "still working on it" email so they're not left wondering. If it keeps failing, it tries up to 3 times before giving up and flagging me instead of retrying forever.
-Needs a human (like expired access permissions, or an actual bug): it skips the retry entirely and pings me on Slack immediately with exactly what broke, so I can step in personally.
+- **Likely to fix itself** (timeouts, DNS errors, rate limits, connection drops): the workflow automatically resumes the customer's cleanup on its own, right where it left off. The customer gets a quick "still working on it" email so they're not left wondering. If it keeps failing, it tries up to 3 times before giving up and flagging me instead of retrying forever.
+- **Needs a human** (like expired access permissions, or an actual bug): it skips the retry entirely and pings me on Slack immediately with exactly what broke, so I can step in personally.
 
 Either way, the customer isn't left stuck, and I'm not the single point of failure for keeping things moving.
 
-Under the hood
+### Under the hood
 
 Early attempts at the auto-resume step tried resubmitting through the same public link Tally sends form data to, but n8n won't let a workflow successfully call back into its own public web address from inside itself. Fixed by giving the workflow a second, internal way to resume processing directly, no network call involved. Real customer submissions still come in through the original link exactly as before, this is purely an internal recovery path.
 
 The recovery step also originally relied on digging through n8n's own execution history to figure out which customer failed, works fine for a small inbox, but broke on a customer with a large backlog, since n8n won't return execution data past a certain size. Fixed by having the workflow save a reference to itself in the customer's record early in each run, so recovery no longer depends on digging through history at all, works the same regardless of inbox size.
 
 Also caught and fixed along the way: a bug that could have misidentified which customer failed if two cleanups were running at the same time, and a couple of silent typos in property names that were quietly breaking status checks without ever throwing a visible error. All tested against real, in-progress customer runs before going live.
+
+#### Updated: SmartInboxCleanup workflow (v3)
+![SmartInboxCleanup workflow](./SmartInboxCleanup%20v3.png)
 
 Try it Live: https://smartinboxcleanup.carrd.co/
