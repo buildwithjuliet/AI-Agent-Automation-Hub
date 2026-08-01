@@ -4,7 +4,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Please categorize this email:\n\nSubject: {{ $json.subject }}\n\nfrom: {{ $json.from }}\n\ncontent:{{ $json.snippet }} \n\nTHRASH_KEYWORDS:{{ $('Tally submission').item.json.body.data.fields[3].value }}\n\nKEEP_KEYWORDS: {{ $('Tally submission').item.json.body.data.fields[2].value }}\n\nOutput ONLY the word 'trash' or 'archive\n\n",
+        "text": "=Please categorize this email:\n\nSubject: {{ $json.subject }}\n\nfrom: {{ $json.from }}\n\ncontent:{{ $json.snippet }} \n\nTHRASH_KEYWORDS:{{ $('Submission Data').item.json.body.data.fields[3].value }}\n\nKEEP_KEYWORDS: {{ $('Submission Data').item.json.body.data.fields[2].value }}\n\nOutput ONLY the word 'trash' or 'archive\n\n",
         "messages": {
           "messageValues": [
             {
@@ -162,7 +162,7 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        -2944,
+        -2880,
         32
       ],
       "id": "3a34a68f-efb0-4276-b3e5-fdf2c630a9f4",
@@ -191,11 +191,15 @@
           "propertyValues": [
             {
               "key": "KEEP_KEYWORDS|rich_text",
-              "textContent": "={{ $('Tally submission').item.json.body.data.fields[2].value }}"
+              "textContent": "={{ $('Submission Data').item.json.body.data.fields[2].value }}"
             },
             {
               "key": "THRASH_KEYWORDS|rich_text",
-              "textContent": "={{ $('Tally submission').item.json.body.data.fields[3].value }}"
+              "textContent": "={{ $('Submission Data').item.json.body.data.fields[3].value }}"
+            },
+            {
+              "key": "Execution ID|number",
+              "numberValue": "={{ Number($execution.id) }}"
             }
           ]
         },
@@ -324,7 +328,7 @@
         "options": {
           "batching": {
             "batch": {
-              "batchSize": 3
+              "batchSize": 5
             }
           }
         }
@@ -355,7 +359,7 @@
         "options": {
           "batching": {
             "batch": {
-              "batchSize": 3
+              "batchSize": 5
             }
           }
         }
@@ -781,6 +785,47 @@
       ],
       "id": "4a0fcfba-840d-4f8e-98cc-83e39d1ea8f9",
       "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "name"
+            },
+            {
+              "name": "email"
+            },
+            {
+              "name": "keepKeywords"
+            },
+            {
+              "name": "trashKeywords"
+            }
+          ]
+        }
+      },
+      "id": "a0bea93a-e354-4585-a3ba-6835f2f73f9d",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -3280,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize input from either the real Tally webhook or the retry trigger\n// into the same shape everything downstream already expects.\nconst input = items[0].json;\n\nif (input.body && input.body.data && input.body.data.fields) {\n  // Real Tally webhook submission — already in the right shape\n  return [{ json: input }];\n}\n\n// Retry trigger — rebuild the same fields array from the passed-in values\nreturn [{\n  json: {\n    body: {\n      data: {\n        fields: [\n          { label: \"Full Name\", value: input.name },\n          { label: \"Email\", value: input.email },\n          { label: \"KEEP_KEYWORDS\", value: input.keepKeywords },\n          { label: \"THRASH_KEYWORDS\", value: input.trashKeywords }\n        ]\n      }\n    }\n  }\n}];"
+      },
+      "id": "ae7568d8-9652-4f52-9677-c6f9515762b1",
+      "name": "Submission Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3056,
+        160
+      ]
     }
   ],
   "pinData": {},
@@ -936,17 +981,6 @@
         ]
       ]
     },
-    "Tally submission": {
-      "main": [
-        [
-          {
-            "node": "Get many database pages",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "HTTP Request: Refresh Google Access Token": {
       "main": [
         [
@@ -1063,6 +1097,39 @@
           }
         ]
       ]
+    },
+    "Tally submission": {
+      "main": [
+        [
+          {
+            "node": "Submission Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Submission Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Submission Data": {
+      "main": [
+        [
+          {
+            "node": "Get many database pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -1075,7 +1142,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "saveExecutionProgress": true
   },
-  "versionId": "e153f9c0-9957-4852-b4d0-0c5f01757688",
+  "versionId": "47d3258d-146d-4852-ac12-f0f294191b82",
   "meta": {
     "templateCredsSetupCompleted": true,
     "aiBuilderAssisted": true,
