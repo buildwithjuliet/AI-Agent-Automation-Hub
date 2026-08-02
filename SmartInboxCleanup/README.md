@@ -133,4 +133,12 @@ Also caught and fixed along the way: a bug that could have misidentified which c
 #### Updated: SmartInboxCleanup workflow (v3)
 ![SmartInboxCleanup workflow](./SmartInboxCleanup%20v3.png)
 
+## Fresh Executions Run Significantly Faster Than Long-Running Ones
+
+Real timing data confirms a clear pattern: a freshly started execution processes batches at roughly **2.3 minutes per 100-email batch**. As a single execution continues running for many hours without interruption, that pace measurably degrades, one run averaged **5.2 minutes per batch** early on, slowing to **18.1 minutes per batch** after 10+ hours of continuous operation, before eventually being manually restarted.
+
+This suggests n8n's own execution engine accumulates internal overhead over the life of a single very long-running execution, separate from and in addition to the earlier-documented per-batch memory issue that chunking was built to solve. Restarting the server and starting a fresh execution consistently after a long run restores the faster pace.
+
+**Practical implication**: for genuinely extreme-volume inboxes, periodically restarting and resubmitting (rather than letting one execution run uninterrupted for many hours) appears to meaningfully improve overall throughput, a real, actionable insight for anyone building similarly long-running n8n loops.
+
 Try it Live: https://smartinboxcleanup.carrd.co/
