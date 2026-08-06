@@ -29,7 +29,7 @@ I built this n8n workflow as a high-speed cleanup engine. It doesn't continuousl
 * **Handshake:** The process begins with a secure link to grant the agent permission to your Gmail.
 * **Redirection:** You are immediately redirected to a Tally form to define your cleanup criteria.
 * **The Cleanup:** Submitting the form triggers an automated workflow that trashes or archives emails based on your specific commands.
-* **AI Logic:** For emails that do not fall into your predefined categories, the AI analyzes their importance to make an autonomous decision.
+* **AI Logic:** For emails that don't clearly match a predefined category, the AI defaults to trashing them, unless they're from a genuine, identifiable human contact, in which case they're archived instead.
 * **Confirmation:** Once the cleanup is complete, a summary email is sent to you detailing exactly how many emails were handled.
 
 ## System Reliability
@@ -107,12 +107,13 @@ A real user connected an inbox with an estimated 18,352 emails, far beyond anyth
 
 ### Why this exists
 
-Sometimes SmartInboxCleanup fails for reasons that have nothing to do with my code at all, a brief network blip, Google's servers being slow to respond, a DNS lookup that times out for a second. These aren't bugs, the internet is just unreliable sometimes.
+While cleaning a real client's inbox of 15,000+ emails, over the course of processing that volume, I ran into failures that had nothing to do with my code at all: a brief network blip, a DNS lookup timing out, Google's servers being momentarily slow to respond. These weren't bugs, the internet is just unreliable sometimes, and a long enough run will eventually run into one of these moments..
 
-Before this update, a failure like that meant the customer's cleanup just sat there, stuck, waiting for me to notice and manually restart it. That's a problem because I'm not online 24/7, if it happens while I'm asleep or unavailable, a customer could be left hanging for hours with no idea what's going on.
+Before this update, a failure like that meant the customer's cleanup just sat there, stuck, waiting for me to notice and manually restart it. That's a real problem, because I'm not online 24/7. If it happens while I'm asleep or unavailable, a customer could be left hanging for hours with no idea what's going on, exactly what started happening during this run..
 
-So I built a second workflow that watches SmartInboxCleanup and reacts automatically the moment something fails, no need for me to be online.
+I already had a simple error workflow in place, one that just sent me a Slack alert whenever SmartInboxCleanup failed. But that meant every failure, even a harmless, temporary network blip, needed me personally online to notice and manually restart things.
 
+So I expanded that existing error workflow to actually think before alerting me: check what kind of failure this is, and automatically resume the customer's cleanup on its own when it's the kind of issue likely to resolve itself, no need for me to be online at all.
 ### How it works
 
 When a failure happens, the error workflow immediately checks: is this the kind of failure that's likely to fix itself if tried again, or is it something that actually needs a human?
