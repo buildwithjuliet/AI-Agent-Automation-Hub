@@ -33,8 +33,7 @@ I built this n8n workflow as a high-speed cleanup engine. It doesn't continuousl
 * **Confirmation:** Once the cleanup is complete, a summary email is sent to you detailing exactly how many emails were handled.
 
 ## System Reliability
-To ensure the workflow runs smoothly, I have included an automated error-handling trigger. If the workflow encounters an issue during execution, it instantly notifies me via Slack so I can address it immediately.
-*Created by Juliet | Building founder-level automation systems.
+This workflow includes automated error handling that goes beyond a simple alert. When something fails, it first checks whether the issue is likely to resolve itself (a network blip, a timeout) and automatically retries before ever involving me. Only genuine, unresolvable issues get escalated to me directly. Full story, including the real customer incident that led to building this, further down in New: self-healing error handling for SmartInboxCleanup.
 
 For the "Weekly Inbox Cleaner" section:
 ![Weekly Inbox Cleaner Architecture](weekly-inbox-reset-arch.png)
@@ -107,7 +106,7 @@ A real user connected an inbox with an estimated 18,352 emails, far beyond anyth
 
 ### Why this exists
 
-While cleaning a real client's inbox of 15,000+ emails, over the course of processing that volume, I ran into failures that had nothing to do with my code at all: a brief network blip, a DNS lookup timing out, Google's servers being momentarily slow to respond. These weren't bugs, the internet is just unreliable sometimes, and a long enough run will eventually run into one of these moments..
+While cleaning a different customer's inbox, this one with over 15,000 emails, I ran into failures that had nothing to do with my code at all: a brief network blip, a DNS lookup timing out, Google's servers being momentarily slow to respond. These weren't bugs, the internet is just unreliable sometimes, and a long enough run will eventually run into one of these moments..
 
 Before this update, a failure like that meant the customer's cleanup just sat there, stuck, waiting for me to notice and manually restart it. That's a real problem, because I'm not online 24/7. If it happens while I'm asleep or unavailable, a customer could be left hanging for hours with no idea what's going on, exactly what started happening during this run..
 
