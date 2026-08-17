@@ -82,9 +82,25 @@ More bugs, from the first real end-to-end test run after the text-to-image pivot
 - A stale field name from a half-finished rename. "Post to LinkedIn" decides whether to attach an image by checking a binary field called File. That field had been renamed to data earlier, everywhere except this one leftover check, so the post would have silently gone out text-only even with an image correctly attached.
 - An unwanted attribution line. Telegram's approval nodes append "This message was sent automatically with n8n" to messages by default. Confirmed the actual LinkedIn node has no equivalent field at all, so this could never have reached a real post, but turned it off anyway so it stops showing up in the approval flow.
 
+## Screenshots & demo
+
+**Final architecture**
+![Final workflow architecture](./architecture-final.png)
+The current live version of the workflow: text-to-image only, cost-optimized, every bug above fixed.
+
+**Architecture before the image-generation pivot**
+![Architecture before the image-generation pivot](./architecture-before-image-pivot.png)
+The earlier version of this branch, back when it was still doing identity-preserving photo editing instead of generating fresh illustrative images.
+
+**Workflow run, node by node**
+
+<video src="./workflow-run-demo.mp4" controls width="700"></video>
+
+A real run, watching the nodes fire in sequence. It stops naturally at the "Wait until 9am" gate, that part isn't shown here on purpose.
+
+**Full workflow JSON**
+The complete exported workflow, with credentials, API keys, chat IDs, and the three AI reasoning prompts redacted: [linkedin-post-agent-workflow.json](./linkedin-post-agent-workflow.json)
+
 ## Status
 
-Built and running, first real post approved and queued. Videos and screenshots to follow.
-
-
-Built and running, first real post approved and queued. Videos and screenshots to follow.
+Built and running, first real post approved and queued.
