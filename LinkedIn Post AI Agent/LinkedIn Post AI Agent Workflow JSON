@@ -1,0 +1,1499 @@
+{
+  "name": "Linkedin Post generator",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 20 * * 0,2,4,5"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -368,
+        16
+      ],
+      "id": "ebf229eb-8360-4129-89eb-6604f8147650",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "YOUR_DATA_TABLE_ID",
+          "mode": "list",
+          "cachedResultName": "MyOwnAlgo - telegram activity log"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "keyValue": "unused"
+            }
+          ]
+        },
+        "limit": 1,
+        "orderBy": true,
+        "orderByDirection": "ASC"
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -144,
+        -144
+      ],
+      "id": "0ccdf3b5-8fcf-4109-bb51-f1d074bbd345",
+      "name": "Get row(s)",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "YOUR_DATA_TABLE_ID",
+          "mode": "list",
+          "cachedResultName": "MyOwnAlgo - telegram activity log"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        64
+      ],
+      "id": "ec1e1566-b1a4-4237-a510-c5a1e575e38d",
+      "name": "Get row(s)1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-sonnet-5",
+          "mode": "list",
+          "cachedResultName": "claude-sonnet-5"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "[redacted on purpose. this is the part that actually took work. want it? book a discovery call and I'll walk you through it]"
+            }
+          ]
+        },
+        "options": {
+          "system": "[redacted on purpose. this is the part that actually took work. want it? book a discovery call and I'll walk you through it]"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        640,
+        96
+      ],
+      "id": "537731ba-f265-46b6-bf19-ec1159dc11b9",
+      "name": "Draft Reused Post",
+      "alwaysOutputData": true,
+      "credentials": {
+        "anthropicApi": {
+          "id": "ANTHROPIC_CREDENTIAL_ID",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.image_reference }}",
+        "additionalFields": {
+          "mimeType": "image/jpeg"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        544,
+        -240
+      ],
+      "id": "dcba0b30-9310-490b-aa50-7bdb3caa8b4f",
+      "name": "Get a file",
+      "webhookId": "e12f7a20-c9a5-4b3c-872e-f9ab6b7d10b4",
+      "credentials": {
+        "telegramApi": {
+          "id": "TELEGRAM_CREDENTIAL_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        848,
+        -80
+      ],
+      "id": "1f6b8347-f62c-4b00-bf0a-c4e911f09a68",
+      "name": "Merge",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c7921f80-47bc-440b-afca-3b32699ba43b",
+              "name": "content",
+              "value": "={{ $('Is there a file?').item.json.content }}",
+              "type": "string"
+            },
+            {
+              "id": "c693ccea-168a-4c26-b8fc-e00289ce43f0",
+              "name": "has_image",
+              "value": "={{ $('Is there a file?').item.json.has_image }}",
+              "type": "string"
+            },
+            {
+              "id": "3c7492eb-e5dd-4882-9e82-4d5ecf134520",
+              "name": "angle_used",
+              "value": "={{ $('Is there a file?').item.json.angle_used }}",
+              "type": "string"
+            },
+            {
+              "id": "5851df3f-bab0-4135-a55c-fe62b543dbb8",
+              "name": "id",
+              "value": "={{ $('Is there a file?').item.json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        720,
+        -224
+      ],
+      "id": "ab41869d-9078-4254-8b6f-9e52e9d28997",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "cachedResultName": "claude-sonnet-5",
+          "mode": "list",
+          "value": "claude-sonnet-5"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "[redacted on purpose. this is the part that actually took work. want it? book a discovery call and I'll walk you through it]"
+            }
+          ]
+        },
+        "options": {
+          "system": "[redacted on purpose. this is the part that actually took work. want it? book a discovery call and I'll walk you through it]",
+          "maxTokens": 700,
+          "temperature": 1
+        }
+      },
+      "id": "cff8166a-2cbb-4724-a2fb-29971d3b6d76",
+      "name": "Draft LinkedIn Post",
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -80
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "anthropicApi": {
+          "id": "ANTHROPIC_CREDENTIAL_ID",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "id": "9cde2b0b-8bda-4e6e-8212-4c3b65794131",
+      "name": "Merge Draft with Image",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1376,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-sonnet-5",
+          "mode": "list",
+          "cachedResultName": "claude-sonnet-5"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "[redacted on purpose. this is the part that actually took work. want it? book a discovery call and I'll walk you through it]"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 300
+        }
+      },
+      "id": "685c42c4-66e0-49bc-a363-8579f4949a26",
+      "name": "Check Image Type",
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        -80
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "anthropicApi": {
+          "id": "ANTHROPIC_CREDENTIAL_ID",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "route-flux",
+              "leftValue": "={{ $json.content[0].text }}",
+              "operator": {
+                "operation": "contains",
+                "type": "string"
+              },
+              "rightValue": "SEND_TO_FLUX"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          }
+        },
+        "options": {}
+      },
+      "id": "5864a5d1-6e02-4c96-8360-83d3cdb04a0f",
+      "name": "Route Image Decision",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1840,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.bfl.ai/v1/flux-2-klein-4b",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-key",
+              "value": "YOUR_BFL_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"prompt\": $('Check Image Type').item.json.content[0].text.match(/FLUX_PROMPT: (.*)/)?.[1] || \"\" } }}",
+        "options": {}
+      },
+      "id": "4f5c041a-9cc9-4b86-9a13-3a3eda92603a",
+      "name": "Flux Generate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1952,
+        -544
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "message": "=Draft ready for review:\n\n{{ $('Prepare for Review').item.json.content }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "✅ Post",
+            "disapproveLabel": "✍️ Not yet"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2288,
+        64
+      ],
+      "id": "9f89f715-e445-443e-bd3a-6917fd5401b3",
+      "name": "Send message and wait for response",
+      "webhookId": "6594290e-3a5f-4359-9d41-110852d00480",
+      "credentials": {
+        "telegramApi": {
+          "id": "TELEGRAM_QC_CREDENTIAL_ID",
+          "name": "Telegram MOA_QC bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "reused-id",
+              "name": "id",
+              "type": "string",
+              "value": "={{ $('Merge').isExecuted ? $('Merge').item.json.id : $json.content.find(c => c.type === 'text').text.match(/SELECTED_ID:\\s*(.*)/)?.[1]?.trim() }}"
+            },
+            {
+              "id": "post-text",
+              "name": "content",
+              "type": "string",
+              "value": "={{ $('Draft LinkedIn Post').isExecuted ? $('Draft LinkedIn Post').item.json.content[0].text : $json.content.find(c => c.type === 'text').text.match(/POST:\\s*([\\s\\S]*)/)?.[1]?.trim() }}"
+            },
+            {
+              "id": "image-verdict",
+              "name": "image_verdict",
+              "type": "string",
+              "value": "={{ $('Check Image Type').isExecuted ? $('Check Image Type').item.json.content[0].text : '' }}"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "50cbcf66-9537-450b-9012-79fa38a3c9e0",
+      "name": "Prepare for Review",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2048,
+        -96
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b76c9d16-df08-4c3a-8529-1d15021e09cc",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        64,
+        -16
+      ],
+      "id": "7a4974c9-e722-4601-b018-9f75acddfe29",
+      "name": "is rant unused?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3dbffd7f-0fa1-4eb0-b5d4-97a08346ae80",
+              "leftValue": "={{ $json.has_image }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        320,
+        -176
+      ],
+      "id": "ca7ed147-f52c-4026-ab44-aa25ca4d64e5",
+      "name": "Is there a file?"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "id": "e7467ceb-4566-4a92-a876-e0943b0092aa",
+      "name": "Send Photo",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2112,
+        80
+      ],
+      "webhookId": "80700dab-3dfd-44fa-9767-17fa1d2ed083",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "telegramApi": {
+          "id": "TELEGRAM_QC_CREDENTIAL_ID",
+          "name": "Telegram MOA_QC bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "post-check",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "79a0b540-df28-44ff-88d8-f2a6cedd7e96",
+      "name": "Post or Not?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2480,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "message": "Not posting this one, what should I do with it?",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "📝 Save to Draft",
+            "disapproveLabel": "🔄 Rewrite"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "dab8576d-51f0-487b-ae7d-2ed739b5079a",
+      "name": "Draft or Rewrite?",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2656,
+        192
+      ],
+      "webhookId": "bae318fa-7bf7-4a31-8acc-3c667dfefd99",
+      "credentials": {
+        "telegramApi": {
+          "id": "TELEGRAM_QC_CREDENTIAL_ID",
+          "name": "Telegram MOA_QC bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "draft-check",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6310c4ba-f964-4119-b344-2ce9ffcf4fe2",
+      "name": "Draft or Rewrite Check",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2864,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "=Here's your draft:\n\n{{ $('Prepare for Review').item.json.content }}",
+        "additionalFields": {}
+      },
+      "id": "209884d4-8d1b-4278-8fc2-0bce2ea64c69",
+      "name": "Send Draft to Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3072,
+        176
+      ],
+      "webhookId": "2d750e71-ca0c-4f00-bd9a-ffea3f2e64fb",
+      "credentials": {
+        "telegramApi": {
+          "id": "TELEGRAM_QC_CREDENTIAL_ID",
+          "name": "Telegram MOA_QC bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resume": "specificTime",
+        "dateTime": "={{ $now.hour >= 9 ? $now.plus({days:1}).set({hour:9,minute:0,second:0,millisecond:0}).toISO() : $now.set({hour:9,minute:0,second:0,millisecond:0}).toISO() }}"
+      },
+      "id": "dc22ad77-7076-4f9a-b04b-f9f49ec9eee3",
+      "name": "Wait until 9am",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2656,
+        -80
+      ],
+      "webhookId": "ea13d065-356b-46ad-b11d-3c89bc68bea5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst binary = $('Prepare for Review').item.binary || {};\nreturn items.map(item => ({ json: item.json, binary }));"
+      },
+      "id": "19b59393-759b-4600-9d14-311ab464a637",
+      "name": "Restore Image Binary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2864,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "person": "YOUR_LINKEDIN_PERSON_URN",
+        "text": "={{ $('Prepare for Review').item.json.content }}",
+        "shareMediaCategory": "={{ $binary.data ? \"IMAGE\" : \"NONE\" }}",
+        "additionalFields": {
+          "visibility": "PUBLIC"
+        }
+      },
+      "id": "ead6b5ee-c884-4697-b6dd-13471aa86e67",
+      "name": "Post to LinkedIn",
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [
+        3072,
+        -80
+      ],
+      "credentials": {
+        "linkedInOAuth2Api": {
+          "id": "LINKEDIN_CREDENTIAL_ID",
+          "name": "LinkedIn account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 12
+      },
+      "id": "90139629-168d-426c-9583-f5761f31d6af",
+      "name": "Wait for Flux",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2368,
+        -656
+      ],
+      "webhookId": "d6dc209e-3859-4732-8815-4116a676af41",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Flux Generate').item.json.polling_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-key",
+              "value": "YOUR_BFL_API_KEY"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "52101753-2d43-4715-ad0b-18a6454f503d",
+      "name": "Poll Flux Result",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2560,
+        -672
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "flux-ready",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "Ready",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          }
+        },
+        "options": {}
+      },
+      "id": "1a958ba5-14bf-4d0d-ad5c-d54cf3d4f648",
+      "name": "Is Flux Ready?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2960,
+        -672
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.result.sample }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "67c3ccf2-8a80-4d69-9152-b962d4b82294",
+      "name": "Download Flux Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3248,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "flux-start-time",
+              "name": "flux_started_at",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "6c4bd060-8126-48ef-b7ea-bfaf9eb3dfb3",
+      "name": "Start Flux Timer",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2176,
+        -624
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const startedAt = new Date($('Start Flux Timer').item.json.flux_started_at).getTime();\nconst elapsedMs = Date.now() - startedAt;\nif (elapsedMs > 120000) {\n  throw new Error('Flux image edit timed out after 2 minutes.');\n}\nreturn $input.all();"
+      },
+      "id": "0b5a9511-a712-4568-a7ed-499dffb1b551",
+      "name": "Check Flux Timeout",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2752,
+        -672
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "YOUR_DATA_TABLE_ID",
+          "cachedResultName": "MyOwnAlgo - telegram activity log"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $('Prepare for Review').item.json.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "used",
+            "date_used": "={{ $now.toISO() }}",
+            "angle_used": "={{ $('Prepare for Review').item.json.content }}",
+            "post_id": "={{ $('Post to LinkedIn').item.json.urn }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "content",
+              "displayName": "content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "has_image",
+              "displayName": "has_image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "image_reference",
+              "displayName": "image_reference",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_used",
+              "displayName": "date_used",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "angle_used",
+              "displayName": "angle_used",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "post_id",
+              "displayName": "post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e1c8e27d-f1ee-4b7c-91e5-df4c741c4da3",
+      "name": "Mark Rant as Used",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        3264,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "YOUR_DATA_TABLE_ID",
+          "cachedResultName": "MyOwnAlgo - telegram activity log"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $('Prepare for Review').item.json.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "used",
+            "date_used": "={{ $now.toISO() }}",
+            "angle_used": "={{ $('Prepare for Review').item.json.content }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "content",
+              "displayName": "content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "has_image",
+              "displayName": "has_image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "image_reference",
+              "displayName": "image_reference",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_used",
+              "displayName": "date_used",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "angle_used",
+              "displayName": "angle_used",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "post_id",
+              "displayName": "post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "ad605c81-cde6-4666-86b3-483488b94298",
+      "name": "Mark Draft as Used",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        3264,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "which-path",
+              "leftValue": "={{ $('Draft Reused Post').isExecuted }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          }
+        },
+        "options": {}
+      },
+      "id": "6899435f-5df5-4b92-9b0a-93aec406fe43",
+      "name": "Which Draft Path?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3088,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "rows",
+        "options": {}
+      },
+      "id": "2f74f954-579c-465d-ac03-a56bb7912a13",
+      "name": "Aggregate Rants",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        480,
+        64
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "is rant unused?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Draft LinkedIn Post",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Draft with Image",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Draft LinkedIn Post": {
+      "main": [
+        [
+          {
+            "node": "Merge Draft with Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Draft with Image": {
+      "main": [
+        [
+          {
+            "node": "Check Image Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Image Type": {
+      "main": [
+        [
+          {
+            "node": "Route Image Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Image Decision": {
+      "main": [
+        [
+          {
+            "node": "Flux Generate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare for Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "is rant unused?": {
+      "main": [
+        [
+          {
+            "node": "Is there a file?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is there a file?": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Send Photo": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "Post or Not?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post or Not?": {
+      "main": [
+        [
+          {
+            "node": "Wait until 9am",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Draft or Rewrite?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft or Rewrite?": {
+      "main": [
+        [
+          {
+            "node": "Draft or Rewrite Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft or Rewrite Check": {
+      "main": [
+        [
+          {
+            "node": "Send Draft to Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Which Draft Path?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait until 9am": {
+      "main": [
+        [
+          {
+            "node": "Restore Image Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore Image Binary": {
+      "main": [
+        [
+          {
+            "node": "Post to LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Flux": {
+      "main": [
+        [
+          {
+            "node": "Poll Flux Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Flux Ready?": {
+      "main": [
+        [
+          {
+            "node": "Download Flux Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait for Flux",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Flux Image": {
+      "main": [
+        [
+          {
+            "node": "Prepare for Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flux Generate": {
+      "main": [
+        [
+          {
+            "node": "Start Flux Timer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Flux Timer": {
+      "main": [
+        [
+          {
+            "node": "Wait for Flux",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Poll Flux Result": {
+      "main": [
+        [
+          {
+            "node": "Check Flux Timeout",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Flux Timeout": {
+      "main": [
+        [
+          {
+            "node": "Is Flux Ready?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post to LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "Mark Rant as Used",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Draft to Telegram": {
+      "main": [
+        [
+          {
+            "node": "Mark Draft as Used",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Which Draft Path?": {
+      "main": [
+        [
+          {
+            "node": "Draft Reused Post",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Draft LinkedIn Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Rants",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Rants": {
+      "main": [
+        [
+          {
+            "node": "Draft Reused Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft Reused Post": {
+      "main": [
+        [
+          {
+            "node": "Prepare for Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare for Review": {
+      "main": [
+        [
+          {
+            "node": "Send Photo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "instanceId": "redacted-for-public-repo"
+  },
+  "description": "This workflow helps Juliet make LinkedIn posts. It is triggered to use rants that she dumps on Telegram, which are automatically saved in n8n datatables to analyse her thoughts using an imperfect procedure to generate a post that sounds human. there is a quality check in this workflow, where juliet accepts or reject what it generated before posting."
+}
