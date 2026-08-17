@@ -41,8 +41,16 @@ Not every post needs an image, and generating one costs real credit. The AI deci
 
 This started out as photo-editing (taking an existing image and touching it up), which is why the original build included identity-preservation rules baked into every edit request. I pivoted away from that entirely, this pipeline no longer edits photos at all, it only generates fresh illustrative images. If I want my own photo on a post, I generate or touch it up myself in a separate, manual, one-off workflow and attach the result directly, that path is intentionally outside this system, since it isn't something that should run automatically.
 
-**4. Cost-aware by design**
-FLUX.2 [pro] (the identity-preserving edit model) is roughly double the cost of FLUX.2 [klein] 4B per image at BFL's own published rates. Since this pipeline no longer touches faces or identity, there was no reason to keep paying pro-tier pricing for an illustrative graphic. Switched models the moment the pivot made pro-tier quality unnecessary.
+**4. Cost-aware by design, at every layer — not just picking a cheaper model**
+The AI drafting step is the one call in this pipeline I can't avoid paying for — it's the actual content, so it's the main cost center. Every other AI and logic node around it exists specifically to stop that cost from repeating itself, or to stop Flux from spending on an image that wasn't worth generating.
+
+The "Check Image Type" decision node is a gatekeeper, not a formality. Its only job is deciding whether an image is worth the Flux spend at all — is one already attached, does the post genuinely benefit from a visual for engagement. It runs before Flux ever gets a prompt, and it's deliberately a cheaper AI call than the main drafting node, so the check itself costs relatively little to protect against an unnecessary image-generation cost.
+
+The fallback engine is built the same way. I store the complete text of every post once it's used, not just a short label of the angle, specifically so the fallback node can do the entire job itself — read the angle already used, write the full new post from a different one, and go straight to quality check. I originally planned it differently: have the fallback just summarize the angle it found and hand that off to the main drafting AI to write the actual post. I dropped that because it meant re-running everything downstream of the draft node again — the image decision, a possible Flux call, all of it — to rewrite content that already had a complete draft sitting right there. Storing the full post once and letting the fallback finish the job itself in one pass avoids paying for that twice.
+
+Two more deliberate cost decisions built into the approval flow itself: I can attach my own image to a rant instead of letting Flux generate one — if a photo's already there, the decision node sees it and skips Flux entirely. And "Save as draft" exists partly for the same reason — sometimes I'd rather add my own photo or a video manually than have the system generate an image for me, so saving as draft holds the post without forcing a Flux call, and I finish it myself later.
+
+On top of all that: FLUX.2 [pro] (the identity-preserving edit model) is roughly double the cost of FLUX.2 [klein] 4B per image at BFL's own published rates. Since this pipeline no longer touches faces or identity, there was no reason to keep paying pro-tier pricing for an illustrative graphic — I switched models the moment the pivot made pro-tier quality unnecessary.
 
 **5. Approval — Telegram, always human-in-the-loop**
 The finished draft (with image, if any) lands back in Telegram for review, with three outcomes: Post, Save as draft (so I can add my own photo later), or Rewrite. Nothing ever posts without a real yes.
