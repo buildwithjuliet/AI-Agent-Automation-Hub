@@ -22,6 +22,7 @@ I am not just writing code; I am building systems that work for you. I focus on:
 
 - **[SmartInboxCleanup](./SmartInboxCleanup)** — an on-demand AI agent that deep-cleans an existing Gmail backlog in one pass. [Try it live](https://smartinboxcleanup.carrd.co/)
 - **SmartInboxTriage** — an always-on inbox agent that triages email as it arrives. Currently being rebuilt. Coming soon.
+- **[LinkedIn Post AI Agent — MyOwnAlgo](./LinkedIn%20Post%20AI%20Agent)** — an AI agent that turns my raw rants into LinkedIn posts in my own voice, captured on Telegram and never posted without my sign-off.
 
 ## Let's connect
 
