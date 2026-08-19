@@ -26,6 +26,11 @@ Rather than build the writing guidance around secondhand advice, I researched Li
 
 That research shaped the writing guidance baked directly into the AI's drafting prompt — not "what creators claim works," but what LinkedIn itself has documented about what its own system rewards.
 
+**Update, August 2026 — writing for AI search too, not just LinkedIn's feed**
+There's a second audience reading every post now: AI models like ChatGPT, Copilot, and Google AI Mode that cite LinkedIn content when answering questions. [\[New research\] AI Search & LinkedIn: 5 Takeaways from 9.5 Million Citations](https://www.linkedin.com/business/marketing/blog/ai-search/new-meltwater-research-shares-5-insights-from-9-million-citations), published on LinkedIn's own Marketing Blog (May 21, 2026) by Chris Hackney, Chief Product Officer at Meltwater, analyzed 9.5 million AI citations and found individual profiles get cited far more than company pages, AI models favor specific numbers and named details over vague opinions, and original content gets cited more than reshared or old posts.
+
+I added this directly into both drafting prompts, but only as a second consideration, not a rulebook. The prompt now tells the AI to let the actual rant decide the balance: technical breakdowns and bug postmortems lean into structure and specificity since that's what gets cited, personal stories and raw complaints stay loose and human. It's explicitly told not to invent numbers or structure that isn't in the rant just to chase citations. Being findable by AI search matters, but not at the cost of sounding like AI-generated content, which is the exact problem this whole system exists to avoid.
+
 **Honest scope note:** the original plan included a self-adapting style engine that would learn from my own post performance data over time (which formats, tones, and topics actually work for me) and adjust automatically. That piece isn't built — LinkedIn doesn't expose an API scope that lets a workflow read a user's own post analytics, so there was no data to learn from. What's built instead leans on LinkedIn's own documented ranking research rather than performance data I can't access. The self-adapting engine remains a future direction if that access ever opens up.
 
 ## How it works
@@ -94,10 +99,9 @@ The earlier version of this branch, back when it was still doing identity-preser
 
 **Workflow run, node by node**
 
-<video src="./workflow-run-demo.mp4" controls width="700"></video>
+[Watch the workflow run](./workflow-run-demo.mp4)
 
 A real run, watching the nodes fire in sequence. It stops naturally at the "Wait until 9am" gate, that part isn't shown here on purpose.
-
 **Full workflow JSON**
 The complete exported workflow, with credentials, API keys, chat IDs, and the three AI reasoning prompts redacted: [linkedin-post-agent-workflow.json](./linkedin-post-agent-workflow.json)
 
