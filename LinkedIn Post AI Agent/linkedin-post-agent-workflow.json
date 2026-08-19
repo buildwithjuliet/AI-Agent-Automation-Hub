@@ -609,7 +609,9 @@
       "parameters": {
         "chatId": "YOUR_TELEGRAM_CHAT_ID",
         "text": "=Here's your draft:\n\n{{ $('Prepare for Review').item.json.content }}",
-        "additionalFields": {}
+        "additionalFields": {
+                    "appendAttribution": false
+        }
       },
       "id": "209884d4-8d1b-4278-8fc2-0bce2ea64c69",
       "name": "Send Draft to Telegram",
@@ -1489,7 +1491,8 @@
   },
   "pinData": {},
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+        "timezone": "Africa/Lagos"
   },
   "staticData": null,
   "meta": {
