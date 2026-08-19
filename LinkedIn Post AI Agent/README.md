@@ -93,6 +93,10 @@ More bugs, from the first real end-to-end test run after the text-to-image pivot
 ![Final workflow architecture](./architecture-final.png)
 The current live version of the workflow: text-to-image only, cost-optimized, every bug above fixed.
 
+**Capture step — Telegram to Data Table**
+![Telegram messages logged into n8n Data Table](./rant%20storage.png)
+The first step in the pipeline: a Telegram Trigger catches each rant the moment I send it and logs it as its own row in an n8n Data Table, tagged unused, so nothing gets lost or merged into one blob.
+
 **Architecture before the image-generation pivot**
 ![Architecture before the image-generation pivot](./architecture-before-image-pivot.png)
 The earlier version of this branch, back when it was still doing identity-preserving photo editing instead of generating fresh illustrative images.
