@@ -105,6 +105,10 @@ A real run, watching the nodes fire in sequence. It stops naturally at the "Wait
 **Full workflow JSON**
 The complete exported workflow, with credentials, API keys, chat IDs, and the three AI reasoning prompts redacted: [linkedin-post-agent-workflow.json](./linkedin-post-agent-workflow.json)
 
+**Before and after — one real rant, one real draft**
+![Human input vs AI output](./rant-to-post-comparison.png)
+A real Telegram exchange, side by side: the actual rant I sent in, and the actual draft the AI sent back — same words, same voice, just shaped into a post. Left uncropped on purpose: "This message was sent automatically with n8n" is still visible in the second screenshot, because that line is proof this was actually built with n8n, not just claimed.
+
 ## Status
 
 Built and running, first real post approved and queued.
