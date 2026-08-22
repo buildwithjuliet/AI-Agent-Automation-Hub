@@ -75,18 +75,18 @@
     },
     {
       "parameters": {
-        "modelId": {
-          "__rl": true,
-          "value": "claude-sonnet-5",
-          "mode": "list",
-          "cachedResultName": "claude-sonnet-5"
-        },
         "messages": {
           "values": [
             {
               "content": "[redacted on purpose. this is the part that actually took work. want it? book a discovery call and I'll walk you through it]"
             }
           ]
+        },
+        "modelId": {
+          "__rl": true,
+          "cachedResultName": "claude-sonnet-5",
+          "mode": "list",
+          "value": "claude-sonnet-5"
         },
         "options": {
           "system": "[redacted on purpose. this is the part that actually took work. want it? book a discovery call and I'll walk you through it]"
@@ -194,12 +194,6 @@
     },
     {
       "parameters": {
-        "modelId": {
-          "__rl": true,
-          "cachedResultName": "claude-sonnet-5",
-          "mode": "list",
-          "value": "claude-sonnet-5"
-        },
         "messages": {
           "values": [
             {
@@ -207,9 +201,15 @@
             }
           ]
         },
+        "modelId": {
+          "__rl": true,
+          "cachedResultName": "claude-sonnet-5",
+          "mode": "list",
+          "value": "claude-sonnet-5"
+        },
         "options": {
-          "system": "[redacted on purpose. this is the part that actually took work. want it? book a discovery call and I'll walk you through it]",
           "maxTokens": 700,
+          "system": "[redacted on purpose. this is the part that actually took work. want it? book a discovery call and I'll walk you through it]",
           "temperature": 1
         }
       },
@@ -248,12 +248,6 @@
     },
     {
       "parameters": {
-        "modelId": {
-          "__rl": true,
-          "value": "claude-sonnet-5",
-          "mode": "list",
-          "cachedResultName": "claude-sonnet-5"
-        },
         "messages": {
           "values": [
             {
@@ -391,13 +385,13 @@
               "id": "post-text",
               "name": "content",
               "type": "string",
-              "value": "={{ $('Draft LinkedIn Post').isExecuted ? $('Draft LinkedIn Post').item.json.content[0].text : $json.content.find(c => c.type === 'text').text.match(/POST:\\s*([\\s\\S]*)/)?.[1]?.trim() }}"
+              "value": "={{ $('Draft LinkedIn Post').isExecuted ? $('Draft LinkedIn Post').last().json.content[0].text : $json.content.find(c => c.type === 'text').text.match(/POST:\\s*([\\s\\S]*)/)?.[1]?.trim() }}"
             },
             {
               "id": "image-verdict",
               "name": "image_verdict",
               "type": "string",
-              "value": "={{ $('Check Image Type').isExecuted ? $('Check Image Type').item.json.content[0].text : '' }}"
+              "value": "={{ $('Check Image Type').isExecuted ? $('Check Image Type').last().json.content[0].text : '' }}"
             }
           ]
         },
@@ -610,7 +604,7 @@
         "chatId": "YOUR_TELEGRAM_CHAT_ID",
         "text": "=Here's your draft:\n\n{{ $('Prepare for Review').item.json.content }}",
         "additionalFields": {
-                    "appendAttribution": false
+          "appendAttribution": false
         }
       },
       "id": "209884d4-8d1b-4278-8fc2-0bce2ea64c69",
@@ -632,7 +626,7 @@
     {
       "parameters": {
         "resume": "specificTime",
-        "dateTime": "={{ $now.hour >= 9 ? $now.plus({days:1}).set({hour:9,minute:0,second:0,millisecond:0}).toISO() : $now.set({hour:9,minute:0,second:0,millisecond:0}).toISO() }}"
+        "dateTime": "={{ $now >= $now.set({hour:7,minute:30,second:0,millisecond:0}) ? $now.plus({days:1}).set({hour:7,minute:30,second:0,millisecond:0}).toISO() : $now.set({hour:7,minute:30,second:0,millisecond:0}).toISO() }}"
       },
       "id": "dc22ad77-7076-4f9a-b04b-f9f49ec9eee3",
       "name": "Wait until 9am",
@@ -1079,6 +1073,23 @@
         480,
         64
       ]
+    },
+    {
+      "id": "da05100e-9f13-4784-84f7-6ddb737ad7f6",
+      "name": "Restore Binary Before Review",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1940,
+        -220
+      ],
+      "parameters": {
+        "combineBy": "combineByPosition",
+        "mode": "combine",
+        "options": {
+          "includeUnpaired": true
+        }
+      }
     }
   ],
   "connections": {
@@ -1160,6 +1171,11 @@
             "node": "Check Image Type",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Restore Binary Before Review",
+            "type": "main",
+            "index": 1
           }
         ]
       ]
@@ -1186,7 +1202,7 @@
         ],
         [
           {
-            "node": "Prepare for Review",
+            "node": "Restore Binary Before Review",
             "type": "main",
             "index": 0
           }
@@ -1487,12 +1503,23 @@
           }
         ]
       ]
+    },
+    "Restore Binary Before Review": {
+      "main": [
+        [
+          {
+            "node": "Prepare for Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "pinData": {},
   "settings": {
     "executionOrder": "v1",
-        "timezone": "Africa/Lagos"
+    "timezone": "Africa/Lagos"
   },
   "staticData": null,
   "meta": {
