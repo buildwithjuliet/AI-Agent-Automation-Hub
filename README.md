@@ -20,9 +20,9 @@ I am not just writing code; I am building systems that work for you. I focus on:
 
 ## Projects
 
-- **[SmartInboxCleanup](./SmartInboxCleanup)** — an on-demand AI agent that deep-cleans an existing Gmail backlog in one pass. [Try it live](https://smartinboxcleanup.carrd.co/)
-- **SmartInboxTriage** — an always-on inbox agent that triages email as it arrives. Currently being rebuilt. Coming soon.
-- **[LinkedIn Post AI Agent — MyOwnAlgo](./LinkedIn%20Post%20AI%20Agent)** — an AI agent that turns my raw rants into LinkedIn posts in my own voice, captured on Telegram and never posted without my sign-off.
+- **[SmartInboxCleanup](./SmartInboxCleanup)** — an on-demand AI agent that deep-cleans an existing Gmail backlog in one pass. Stress-tested live on a real 18,000+ email inbox, with self-healing error recovery so a dropped connection never leaves a customer's cleanup stuck. [Full build log & incident postmortem →](./SmartInboxCleanup) · [Try it live](https://smartinboxcleanup.carrd.co/)
+- **SmartInboxTriage** — an always-on inbox agent, RAG-powered (Groq + Cohere + Supabase), that reads incoming email, replies from a knowledge base, and escalates to me over WhatsApp the moment it's genuinely unsure. Actively being tuned against real founder workflows.
+- **[LinkedIn Post AI Agent — MyOwnAlgo](./LinkedIn%20Post%20AI%20Agent)** — turns raw rants (captured on Telegram) into LinkedIn posts in my own voice, grounded in LinkedIn's own engineering research on feed ranking, with optional image generation and a human approval gate before anything goes live. [Full build log →](./LinkedIn%20Post%20AI%20Agent)
 
 ## Let's connect
 
