@@ -4,6 +4,14 @@
 
 An AI agent that turns raw, unshaped thoughts into LinkedIn posts written in my own voice — captured the moment they happen, drafted on a schedule, and never posted without my sign-off.
 
+## It's working
+
+![My post next to the Google AI Overview that paraphrased it, with the matching line called out](./merged-ai-referencing-post.png)
+
+That's a post this agent drafted, and Google's AI Overview paraphrasing it back to me the next day — unprompted, no action from me in between.
+
+**[See the case study →](./case-study-7-posts-one-week.md)** of how this workflow performed in roughly a week of being used.
+
 ## Why I built this
 
 Staying consistent on LinkedIn is mentally exhausting. Cracking my brain every time I needed to post wasn't sustainable, and I wanted something that could take that weight off without producing the kind of content that gets flagged.
