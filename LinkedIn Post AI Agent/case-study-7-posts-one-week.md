@@ -18,6 +18,8 @@ Across the week, cumulative impressions went from a slow start to **797 total, u
 
 ![7 day impressions chart plus reach breakdown, both the weekly total and the single best post](merged-7day-analytics.png)
 
+(Also a snapshot, taken Aug 27, 2026 — the curve was still going up when I pulled this.)
+
 ## People actually responded
 
 Top posts by impressions this week:
@@ -29,7 +31,9 @@ Top posts by impressions this week:
 
 ![Top performing posts, past 7 days by impressions](top-performing-posts.png)
 
-Worth being upfront: some of those comment counts include my own replies — I reply to everyone. That's not padding, that's what real conversation on a thread looks like. It's still a real shift from posts that got one comment, from me, and nothing else.
+Snapshot numbers, not final ones — every post here was still climbing when I took the screenshot, so if you check these posts today the counts will be higher.
+
+Worth being upfront too: some of those comment counts include my own replies — I reply to everyone. That's not padding, that's what real conversation on a thread looks like. It's still a real shift from posts that got one comment, from me, and nothing else.
 
 ## Google noticed
 
