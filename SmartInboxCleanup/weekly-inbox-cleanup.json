@@ -78,11 +78,11 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Please categorize this enail:\nSubject: {{ $json.Subject }}\nfrom: {{ $json.From }}\ncontent:{{ $json.snippet }} ",
+        "text": "[redacted on purpose. this is the part that actually took work. want it? book a discovery call and I'll walk you through it]",
         "messages": {
           "messageValues": [
             {
-              "message": "You are a bold assistant. If an email is clearly a newsletter, promotion, or notification, mark it for deletion. Analyze the email and decide if it is important or clutter.  Rule for ARCHIVE: Use this for Job offers, certificates  Partnership requests, Business offers, or direct Questions from humans. Rule for DELETE: Use this for everything else (Promotions, Newsletters, App notifications, Spam).  Constraint: You must respond ONLY with a JSON object. No other text. Format: {\"decision\": \"ARCHIVE\"} or {\"decision\": \"DELETE\"}"
+              "message": "[redacted on purpose. this is the part that actually took work. want it? book a discovery call and I'll walk you through it]"
             }
           ]
         },

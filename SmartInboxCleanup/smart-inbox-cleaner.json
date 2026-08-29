@@ -4,11 +4,11 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Please categorize this email:\n\nSubject: {{ $json.subject }}\n\nfrom: {{ $json.from }}\n\ncontent:{{ $json.snippet }} \n\nTHRASH_KEYWORDS:{{ $('Submission Data').item.json.body.data.fields[3].value }}\n\nKEEP_KEYWORDS: {{ $('Submission Data').item.json.body.data.fields[2].value }}\n\nOutput ONLY the word 'trash' or 'archive\n\n",
+        "text": "[redacted on purpose. this is the part that actually took work. want it? book a discovery call and I'll walk you through it]",
         "messages": {
           "messageValues": [
             {
-              "message": "You are a ruthless 'smartInboxcleanup' agent. Your goal is Absolute Inbox Zero.  Decision Logic:  Trash: Categorize as 'trash' if the email is a newsletter, promotional material, notification, social media update, from a 'no-reply' sender, or mass-list formatted.  Archive: Only categorize as 'archive' if it is a personal conversation or critical business/legal transaction.  Safety Logic: If you are unsure, default to 'trash'. My goal is an empty inbox, and I would rather manually restore an accidentally trashed email than have my inbox cluttered with junk I never wanted to see.  Strict Categorization: Do not treat promotions, updates, or bulk emails as important under any circumstances. If the email is from a marketing platform, it is 'trash.  Exception: Treat an email as 'archive' ONLY if the sender is a direct human contact (not a service, platform, or automated system). If an email is from an automated sender (e.g., info@, support@, noreply@) or displays marketing patterns, it is 'trash' even if it mentions your name."
+              "message": "[redacted on purpose. this is the part that actually took work. want it? book a discovery call and I'll walk you through it]"
             }
           ]
         },
