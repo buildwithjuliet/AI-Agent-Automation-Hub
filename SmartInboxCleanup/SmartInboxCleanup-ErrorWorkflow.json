@@ -1,0 +1,630 @@
+{
+  "name": "SmartInboxCleaner Error workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        144
+      ],
+      "id": "f7a2cd7f-8235-4b59-9814-927a5721338e",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "value": "U0A8WD5V1D0",
+          "mode": "list",
+          "cachedResultName": "chukwukaelojuliet"
+        },
+        "text": "=<@U0A8WD5V1D0> ⚠️ Workflow Error Detected  Workflow Name: {{ $json.workflow.name }} Failed at Node: {{ $json.execution.lastNodeExecuted }} Error Message:  {{ $json.execution.error.message }} Link to execution: {{ $json.execution.url }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        256,
+        32
+      ],
+      "id": "fa40587b-5c35-4f88-a29b-a20063f2ff8f",
+      "name": "Send a message1",
+      "webhookId": "YOUR_WEBHOOK_ID_1",
+      "credentials": {
+        "slackApi": {
+          "id": "Ef9aLnsg4wpi875W",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.execution.error.message }}",
+              "rightValue": "EAI_AGAIN",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "c2",
+              "leftValue": "={{ $json.execution.error.message }}",
+              "rightValue": "ETIMEDOUT",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "c3",
+              "leftValue": "={{ $json.execution.error.message }}",
+              "rightValue": "ECONNRESET",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "c4",
+              "leftValue": "={{ $json.execution.error.message }}",
+              "rightValue": "rate limit",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "c5",
+              "leftValue": "={{ $json.execution.error.message }}",
+              "rightValue": "429",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "c6",
+              "leftValue": "={{ $json.execution.error.message }}",
+              "rightValue": "DNS",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "aab0f524-151d-4ec7-89f2-023903dee386",
+      "name": "Is Retriable Error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        96,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "8ad556fd-bd87-46db-a21b-d58f992aec30",
+          "cachedResultName": "SmartInboxCleanup Signups"
+        },
+        "limit": 1,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Execution ID|number",
+              "condition": "equals",
+              "numberValue": "={{ Number($json.execution.id) }}"
+            }
+          ]
+        },
+        "options": {
+          "sort": {
+            "sortValue": [
+              {
+                "key": "Signed Up date|created_time",
+                "direction": "descending"
+              }
+            ]
+          }
+        }
+      },
+      "id": "49ea27f3-e171-4681-93fd-54602456de2f",
+      "name": "Find Customer Record",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        384,
+        -176
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "VABxZHZ9wOaMHU7V",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "if (items.length === 0) {\n  return [{ json: { found: false, underLimit: false, alreadyDone: false } }];\n}\nconst item = items[0].json;\nconst status = item.property_status;\nconst retryCount = item.property_retry_count || 0;\nreturn [{\n  json: {\n    found: true,\n    alreadyDone: status === 'Done',\n    underLimit: retryCount < 3,\n    retryCount: retryCount,\n    notionPageId: item.id,\n    name: item.property_name,\n    email: item.property_email,\n    keepKeywords: item.property_keep_keywords,\n    trashKeywords: item.property_thrash_keywords\n  }\n}];"
+      },
+      "id": "d6f529f0-3f65-4dae-9397-cb1dcafa72b4",
+      "name": "Check Retry Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "u1",
+              "leftValue": "={{ $json.found }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "u2",
+              "leftValue": "={{ $json.underLimit }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "u3",
+              "leftValue": "={{ $json.alreadyDone }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5333c903-45f3-4dc4-bd03-92375004e10c",
+      "name": "Under Retry Limit?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        832,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.notionPageId }}"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Retry Count|number",
+              "numberValue": "={{ $json.retryCount + 1 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "506f02b1-9d37-421a-9229-6388df1d5aff",
+      "name": "Increment Retry Count",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1056,
+        -288
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "VABxZHZ9wOaMHU7V",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendHTML": true,
+        "subject": "Quick update on your inbox cleanup",
+        "htmlContent": "=<p>Hi {{ $('Check Retry Status').item.json.name }},</p>\n<p>Quick status update on your inbox cleanup — we're still working through it, and we're continuing now.</p>\n<p>You'll get your completion email once everything's fully done.</p>\n<p>Questions in the meantime? support@buildwithjuliet.com</p>\n<p>Best,<br>buildwithjuliet</p>",
+        "sender": "kosy@buildwithjuliet.com",
+        "receipients": "={{ $('Check Retry Status').item.json.email }}",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "id": "e8d21f18-25c1-4ba0-a1ce-a5553e33371b",
+      "name": "Notify Customer of Progress",
+      "type": "n8n-nodes-base.sendInBlue",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        -304
+      ],
+      "credentials": {
+        "sendInBlueApi": {
+          "id": "1YO883B9RfJfWkIJ",
+          "name": "Brevo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "value": "U0A8WD5V1D0",
+          "mode": "list",
+          "cachedResultName": "chukwukaelojuliet"
+        },
+        "text": "=<@U0A8WD5V1D0> ⚠️ SmartInboxCleanup retried 3 times and is still failing for {{ $json.email || 'a customer' }}. This one needs your manual attention now, auto-retry has stopped.",
+        "otherOptions": {}
+      },
+      "id": "c52917ff-d2b6-464d-84b1-bcae572c4230",
+      "name": "Retry Limit Reached",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        1280,
+        160
+      ],
+      "webhookId": "YOUR_WEBHOOK_ID_2",
+      "credentials": {
+        "slackApi": {
+          "id": "Ef9aLnsg4wpi875W",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "s1",
+              "leftValue": "={{ $json.workflow.name }}",
+              "rightValue": "SmartInboxCleanup",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ca6587b8-912f-4bf3-9919-44ee0465a0ca",
+      "name": "Is SmartInboxCleanup?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -96,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "WD0BdKtSPRXetXFj",
+          "cachedResultName": "SmartInboxCleanup"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $('Check Retry Status').item.json.name }}",
+            "email": "={{ $('Check Retry Status').item.json.email }}",
+            "keepKeywords": "={{ $('Check Retry Status').item.json.keepKeywords }}",
+            "trashKeywords": "={{ $('Check Retry Status').item.json.trashKeywords }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "keepKeywords",
+              "displayName": "keepKeywords",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "trashKeywords",
+              "displayName": "trashKeywords",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "0f97a63e-5b0e-4d5b-a178-17b49bba0f43",
+      "name": "Execute Sub-workflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1488,
+        -304
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ad1",
+              "leftValue": "={{ $json.alreadyDone }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a66a944a-2cd7-4873-8323-c43600bda19c",
+      "name": "Already Done?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1072,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "value": "U0A8WD5V1D0",
+          "mode": "list",
+          "cachedResultName": "chukwukaelojuliet"
+        },
+        "text": "=<@U0A8WD5V1D0> ℹ️ SmartInboxCleanup retry check ran for {{ $json.email || 'a customer' }}, but their cleanup was already marked Done. No action needed — this was a stray error event after completion.",
+        "otherOptions": {}
+      },
+      "id": "7feb0b15-888d-4be6-8209-2a4c24471544",
+      "name": "Already Done - No Action Needed",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        1280,
+        -64
+      ],
+      "webhookId": "YOUR_WEBHOOK_ID_3",
+      "credentials": {
+        "slackApi": {
+          "id": "Ef9aLnsg4wpi875W",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Is Retriable Error?": {
+      "main": [
+        [
+          {
+            "node": "Find Customer Record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Retry Status": {
+      "main": [
+        [
+          {
+            "node": "Under Retry Limit?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Under Retry Limit?": {
+      "main": [
+        [
+          {
+            "node": "Increment Retry Count",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Already Done?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Increment Retry Count": {
+      "main": [
+        [
+          {
+            "node": "Notify Customer of Progress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Customer Record": {
+      "main": [
+        [
+          {
+            "node": "Check Retry Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is SmartInboxCleanup?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is SmartInboxCleanup?": {
+      "main": [
+        [
+          {
+            "node": "Is Retriable Error?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Customer of Progress": {
+      "main": [
+        [
+          {
+            "node": "Execute Sub-workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already Done?": {
+      "main": [
+        [
+          {
+            "node": "Already Done - No Action Needed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retry Limit Reached",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "91be9cfc-d178-4794-ab8a-bb53c8d19535",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "YOUR_N8N_INSTANCE_ID"
+  },
+  "nodeGroups": [],
+  "id": "NsDO9kR6OWCfGqaX",
+  "tags": []
+}
