@@ -44,7 +44,13 @@ These aren't bugs that got fixed. They're places where the system was deliberate
 
 ## What Broke
 
-**Notion's built in ID counter doesn't reset on delete.** The Order # field is Notion's native auto incrementing ID property. Deleting every row in the database does not reset it, the counter is attached to the property itself, not the data, so it keeps counting from wherever it left off. The only real fix is deleting and recreating the property itself, which resets the counter to zero while leaving the database, its relations, and every workflow connection untouched.
+**Notion's built in ID counter doesn't reset on delete, and neither does deleting the property.** The Order # field is Notion's native auto incrementing ID property. Deleting every row in the database does not reset it, the counter is attached to the property itself, not the data, so it keeps counting from wherever it left off.
+
+My first attempt at a fix was deleting and recreating the property itself, assuming that would zero it out. It did not. Notion keeps a hidden, permanent sequence tied to the database, counting every page ever created in it, deleted ones included. Deleting the property just detaches from that hidden counter, recreating it reattaches to the exact same one instead of starting fresh, so the very next real order picked up right where the old, deleted test data had left off.
+
+The actual fix is duplicating the database without its content, which creates a genuinely new database with its own fresh counter starting at 1, then deleting the old one.
+
+Lesson learned the hard way: decide on an ID property only once testing is completely finished, or duplicate the database without content immediately after testing and before real use begins, not somewhere in the middle of it.
 
 ## Workflow files
 
