@@ -1,6 +1,8 @@
 # Order & Customer Communication — Kulz Laundry
 
-An end to end order intake, invoicing, and status communication system built for a real laundry business, replacing a fully manual paper and WhatsApp process.
+An end to end order intake, invoicing, and status communication system built for a real laundry business in Awka, Anambra State, replacing a fully manual paper and WhatsApp process.
+
+**Built with:** Tally (order intake form), n8n (automation), Notion (CRM database), Evolution API (WhatsApp), Termii (SMS)
 
 ## The Problem
 
