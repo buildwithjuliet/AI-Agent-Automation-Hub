@@ -52,6 +52,8 @@ The actual fix is duplicating the database without its content, which creates a 
 
 Lesson learned the hard way: decide on an ID property only once testing is completely finished, or duplicate the database without content immediately after testing and before real use begins, not somewhere in the middle of it.
 
+By the time this was discovered, the business was already using the system for real orders. Duplicating the database at that point would have meant manually re-pointing every workflow that references Orders by its database ID, the trigger that watches for status changes, order creation, and the duplicate customer lookup, all of it, with a real chance of breaking a two way relation in the process. The Order # is a receipt number with no effect on balances, messages, or anything the business actually depends on. So the call here was to leave it running in the 30s rather than risk a working, in use system over something purely cosmetic.
+
 ## Workflow files
 
 - [order-workflow.json](./order-workflow.json)
