@@ -1,0 +1,280 @@
+{
+  "name": "Kulz's Communication Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": { "item": [{ "mode": "everyMinute" }] },
+        "event": "pagedUpdatedInDatabase",
+        "dataSourceId": { "__rl": true, "value": "REDACTED", "mode": "list", "cachedResultName": "Orders", "cachedResultUrl": "REDACTED" }
+      },
+      "type": "n8n-nodes-base.notionTrigger",
+      "typeVersion": 1.1,
+      "position": [-320, -160],
+      "id": "3422ccc8-bd17-4dc0-87fb-aedd6bf7300a",
+      "name": "Notion Trigger",
+      "credentials": { "notionApi": { "id": "REDACTED", "name": "kulz order-communication" } }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 3 },
+          "conditions": [
+            { "id": "bb980f3a-77c0-4b70-9e31-f8c4c0499d83", "leftValue": "={{ $json.Status }}", "rightValue": "Done", "operator": { "type": "string", "operation": "equals" } },
+            { "id": "da33a6e7-bf6c-414e-9e02-c72a6a4aba98", "leftValue": "={{ $json[\"Ready Sent\"] }}", "rightValue": false, "operator": { "type": "boolean", "operation": "equals" } }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [-128, -336],
+      "id": "1d4f23be-0627-43bc-8df5-c9b56f8969f3",
+      "name": "Check Done Status"
+    },
+    {
+      "parameters": { "resource": "databasePage", "operation": "get", "pageId": { "__rl": true, "value": "={{ $json.Customer[0] }}", "mode": "id" }, "options": {} },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [128, -384],
+      "id": "77dbd5d2-e7a1-4237-ae0c-943b62658cd6",
+      "name": "Get a database page",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2500,
+      "credentials": { "notionApi": { "id": "REDACTED", "name": "kulz order-communication" } }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "46bac5dd-8981-4944-a7da-20e6d4f6afe0", "name": "customerName", "value": "={{ $json.property_name }}", "type": "string" },
+            { "id": "911672ad-133c-44b1-8fc6-e7a323c6a222", "name": "balanceLine", "value": "={{ $json.property_old_bill > 0 ? 'Balance remaining: N' + $json.property_old_bill + '.' : 'Fully paid. No balance.' }}", "type": "string" }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [336, -384],
+      "id": "bceb83db-2300-4187-b290-81a8bf704785",
+      "name": "Build Ready Message"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage", "operation": "update",
+        "pageId": { "__rl": true, "value": "={{ $('Check Done Status').item.json.id }}", "mode": "id" },
+        "propertiesUi": { "propertyValues": [{ "key": "Ready Sent|checkbox", "checkboxValue": true }] },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [1008, -352],
+      "id": "419ab3cc-39d3-413d-a941-fad12abda85b",
+      "name": "Check \"Ready sent\"",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2500,
+      "credentials": { "notionApi": { "id": "REDACTED", "name": "kulz order-communication" } }
+    },
+    {
+      "parameters": { "resource": "databasePage", "operation": "get", "pageId": { "__rl": true, "value": "={{ $json.Customer[0] }}", "mode": "id" }, "options": {} },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [160, 16],
+      "id": "461b1bad-0574-4f08-ae85-99c722da1ff8",
+      "name": "Get a database page1",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2500,
+      "credentials": { "notionApi": { "id": "REDACTED", "name": "kulz order-communication" } }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "46bac5dd-8981-4944-a7da-20e6d4f6afe0", "name": "customerName", "value": "={{ $json.property_name }}", "type": "string" },
+            { "id": "911672ad-133c-44b1-8fc6-e7a323c6a222", "name": "balanceLine", "value": "={{ $json.property_old_bill > 0 ? 'Balance remaining: N' + $json.property_old_bill + '.' : 'Fully paid. No balance.' }}", "type": "string" },
+            { "id": "a1f4d2e3-8b7c-4a11-9f2d-3c8e7f105a4b", "name": "collectedDate", "value": "={{ $now.format('MMM d, yyyy, h:mm a') }}", "type": "string" }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [368, 16],
+      "id": "85630593-b886-4f7b-b504-bbd21276217d",
+      "name": "Build Collected Message"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 3 },
+          "conditions": [
+            { "id": "bb980f3a-77c0-4b70-9e31-f8c4c0499d83", "leftValue": "={{ $json.Status }}", "rightValue": "Collected", "operator": { "type": "string", "operation": "equals" } },
+            { "id": "c2b1e4d5-9a3f-4b6c-8d1e-2f3a4b5c6d7e", "leftValue": "={{ $json[\"Collected Sent\"] }}", "rightValue": false, "operator": { "type": "boolean", "operation": "equals" } }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [-96, 32],
+      "id": "bb6dec6b-0267-4e94-a532-09061a890351",
+      "name": "Check collected Status"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage", "operation": "update",
+        "pageId": { "__rl": true, "value": "={{ $('Check collected Status').item.json.id }}", "mode": "id" },
+        "propertiesUi": { "propertyValues": [{ "key": "Collected Sent|checkbox", "checkboxValue": true }, { "key": "Date Collected|date", "date": "={{ $now.toISO() }}" }] },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [1056, 96],
+      "id": "2a668758-4107-4f25-a50b-29c4b15e9189",
+      "name": "Check \"collected sent\"",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2500,
+      "credentials": { "notionApi": { "id": "REDACTED", "name": "kulz order-communication" } }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3 },
+          "conditions": [{ "id": "4a85e612-576b-47e8-b29f-9e29dc0eec2a", "leftValue": "={{ $json.property_contact_channel }}", "rightValue": "WhatsApp", "operator": { "type": "string", "operation": "equals" } }],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ddf9ded0-5f82-4c80-beba-a2e2d7593e2c",
+      "name": "Check Contact Channel (Ready)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [560, -352]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3 },
+          "conditions": [{ "id": "e1a5e037-4605-4286-8e9f-a146ea048d2b", "leftValue": "={{ $json.property_contact_channel }}", "rightValue": "WhatsApp", "operator": { "type": "string", "operation": "equals" } }],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ccdddeb4-0f4f-463e-9451-210b8d250d11",
+      "name": "Check Contact Channel (Collected)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [560, 16]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://evolution-api-spit.srv1973575.hstgr.cloud/message/sendText/kulz_laundry",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"number\": $json.property_phone.replace('+',''), \"text\": \"Hi \" + $json.customerName + \",\\n\\nYour laundry is ready for pickup.\\n\\n\" + $json.balanceLine + \"\\n\\nThank you for your patience.\\nKULZ LAUNDRY\", \"delay\": Math.floor(Math.random()*2500)+3000 } }}",
+        "options": {}
+      },
+      "id": "c6e7cd3a-afd7-41a4-a150-8b70229d2bfc",
+      "name": "Send Ready WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [768, -528],
+      "credentials": { "httpHeaderAuth": { "id": "REDACTED", "name": "Evolution API - kulz_laundry" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://evolution-api-spit.srv1973575.hstgr.cloud/message/sendText/kulz_laundry",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"number\": $json.property_phone.replace('+',''), \"text\": \"Hi \" + $json.customerName + \",\\n\\nThis confirms your laundry was collected on \" + $json.collectedDate + \".\\n\\n\" + $json.balanceLine + \"\\n\\nThank you for choosing us. See you next time!\\nKULZ LAUNDRY\", \"delay\": Math.floor(Math.random()*2500)+3000 } }}",
+        "options": {}
+      },
+      "id": "857cd1d6-7f25-4cc7-8e57-d0c0f9703758",
+      "name": "Send Collected WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [784, -48],
+      "credentials": { "httpHeaderAuth": { "id": "REDACTED", "name": "Evolution API - kulz_laundry" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://v4.api.termii.com/api/sms/send",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "to", "value": "={{ $json.property_phone.replace('+','') }}" },
+            { "name": "from", "value": "OE Alert" },
+            { "name": "sms", "value": "={{ 'Hi ' + $json.customerName + ',\\n\\nYour laundry is ready for pickup.\\n\\n' + $json.balanceLine + '\\n\\nThank you for your patience.\\nKULZ LAUNDRY' }}" },
+            { "name": "type", "value": "plain" },
+            { "name": "channel", "value": "generic" },
+            { "name": "api_key", "value": "REDACTED" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [784, -224],
+      "id": "b6c85ce7-771d-436e-b9c6-ed3918a3b7fd",
+      "name": "Send Ready SMS"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://v4.api.termii.com/api/sms/send",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "to", "value": "={{ $json.property_phone.replace('+','') }}" },
+            { "name": "from", "value": "OE Alert" },
+            { "name": "sms", "value": "={{ 'Hi ' + $json.customerName + ', your laundry was collected ' + $json.collectedDate + '.\\n' + $json.balanceLine + '\\nThanks for choosing us! KULZ LAUNDRY' }}" },
+            { "name": "type", "value": "plain" },
+            { "name": "channel", "value": "generic" },
+            { "name": "api_key", "value": "REDACTED" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [800, 240],
+      "id": "8f313256-fa97-4c50-b2aa-2e25984fd52e",
+      "name": "Send Collected SMS"
+    }
+  ],
+  "connections": {
+    "Notion Trigger": { "main": [[{ "node": "Check Done Status", "type": "main", "index": 0 }, { "node": "Check collected Status", "type": "main", "index": 0 }]] },
+    "Check Done Status": { "main": [[{ "node": "Get a database page", "type": "main", "index": 0 }]] },
+    "Get a database page": { "main": [[{ "node": "Build Ready Message", "type": "main", "index": 0 }]] },
+    "Get a database page1": { "main": [[{ "node": "Build Collected Message", "type": "main", "index": 0 }]] },
+    "Check collected Status": { "main": [[{ "node": "Get a database page1", "type": "main", "index": 0 }], []] },
+    "Build Ready Message": { "main": [[{ "node": "Check Contact Channel (Ready)", "type": "main", "index": 0 }]] },
+    "Build Collected Message": { "main": [[{ "node": "Check Contact Channel (Collected)", "type": "main", "index": 0 }]] },
+    "Check Contact Channel (Ready)": { "main": [[{ "node": "Send Ready WhatsApp", "type": "main", "index": 0 }], [{ "node": "Send Ready SMS", "type": "main", "index": 0 }]] },
+    "Check Contact Channel (Collected)": { "main": [[{ "node": "Send Collected WhatsApp", "type": "main", "index": 0 }], [{ "node": "Send Collected SMS", "type": "main", "index": 0 }]] },
+    "Send Ready WhatsApp": { "main": [[{ "node": "Check \"Ready sent\"", "type": "main", "index": 0 }]] },
+    "Send Collected WhatsApp": { "main": [[{ "node": "Check \"collected sent\"", "type": "main", "index": 0 }]] },
+    "Send Ready SMS": { "main": [[{ "node": "Check \"Ready sent\"", "type": "main", "index": 0 }]] },
+    "Send Collected SMS": { "main": [[{ "node": "Check \"collected sent\"", "type": "main", "index": 0 }]] }
+  }
+}
