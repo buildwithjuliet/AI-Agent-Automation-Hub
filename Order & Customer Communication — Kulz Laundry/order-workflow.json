@@ -1,0 +1,257 @@
+{
+  "name": "Kulz's Order workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "b0f3c169-e9be-4b8e-a407-0ea214041385",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 0],
+      "id": "18de4f4b-cf16-4033-9f58-5f8fbbdc3027",
+      "name": "Webhook",
+      "webhookId": "b0f3c169-e9be-4b8e-a407-0ea214041385",
+      "credentials": {
+        "httpHeaderAuth": { "id": "REDACTED", "name": "Header Auth account 2" }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "dataSourceId": {
+          "__rl": true,
+          "value": "REDACTED",
+          "mode": "list",
+          "cachedResultName": "Customers",
+          "cachedResultUrl": "REDACTED"
+        },
+        "limit": 1,
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            { "key": "Phone|phone_number", "condition": "equals", "richTextValue": "={{ $json.body.data.fields[1].value }}" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [224, 0],
+      "id": "06d9bcdf-b242-48ff-bfa9-890b15912dfe",
+      "name": "Get many database pages",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2500,
+      "credentials": {
+        "notionApi": { "id": "REDACTED", "name": "kulz order-communication" }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "dataSourceId": {
+          "__rl": true,
+          "value": "REDACTED",
+          "mode": "list",
+          "cachedResultName": "Customers",
+          "cachedResultUrl": "REDACTED"
+        },
+        "title": "={{ $('Webhook').item.json.body.data.fields[0].value }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Contact Channel|select", "selectValue": "={{ (() => { const f = $('Webhook').item.json.body.data.fields.find(x => x.label === \"How should we reach you with updates?\"); return f.options.find(o => o.id === f.value[0]).text; })() }}" },
+            { "key": "Phone|phone_number", "phoneValue": "={{ $('Webhook').item.json.body.data.fields[1].value }}" }
+          ]
+        },
+        "blockUi": { "blockValues": [{}] },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [640, 144],
+      "id": "9e7e5273-89ca-4fdc-972c-0b0a051e8709",
+      "name": "Create Customer",
+      "credentials": {
+        "notionApi": { "id": "REDACTED", "name": "kulz order-communication" }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "dataSourceId": {
+          "__rl": true,
+          "value": "REDACTED",
+          "mode": "list",
+          "cachedResultName": "Orders",
+          "cachedResultUrl": "REDACTED"
+        },
+        "title": "={{ $('Webhook').item.json.body.data.fields[0].value }}",
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Customer|relation", "relationValue": ["={{ $json.id }}"] },
+            { "key": "Amount (₦)|number", "numberValue": "={{ $('Webhook').item.json.body.data.fields[9].value }}" },
+            { "key": "Status|status", "statusValue": "Ordered" },
+            { "key": "Item Count|number", "numberValue": "={{ $('Webhook').item.json.body.data.fields[3].value }}" },
+            { "key": "Items / Notes|rich_text", "textContent": "={{ $('Webhook').item.json.body.data.fields[4].value }}" },
+            { "key": "Order Date|date", "date": "={{ $('Webhook').item.json.body.data.createdAt }}", "timezone": "Africa/Lagos" },
+            { "key": "Attendant|select", "selectValue": "={{ $('Webhook').item.json.body.data.fields[10].options[0].text }}" },
+            { "key": "Ironing|checkbox", "checkboxValue": "={{ $('Webhook').item.json.body.data.fields[8].value }}" },
+            { "key": "Starching|checkbox", "checkboxValue": "={{ $('Webhook').item.json.body.data.fields[7].value }}" },
+            { "key": "Washing|checkbox", "checkboxValue": "={{ $('Webhook').item.json.body.data.fields[6].value }}" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [832, -16],
+      "id": "dff2384a-5a0a-4ab7-847b-f6f5859731fe",
+      "name": "Create Order",
+      "credentials": {
+        "notionApi": { "id": "REDACTED", "name": "kulz order-communication" }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 3 },
+          "conditions": [
+            { "id": "66a6a1ba-1e99-4c56-aded-f76d2fd92907", "leftValue": "={{ $json.property_phone }}", "rightValue": "", "operator": { "type": "string", "operation": "exists", "singleValue": true } }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [416, 0],
+      "id": "34cd9ccd-9d2f-452e-9fe3-ce1826b72bf4",
+      "name": "Customer exists?",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "951b7a48-143b-4f84-a7cb-d5f22ac848a7", "name": "customerName", "value": "={{ $('Webhook').item.json.body.data.fields[0].value }}", "type": "string" },
+            { "id": "b9607633-b7f8-4303-aad2-394c98b402ef", "name": "itemPhrase", "value": "={{ $('Webhook').item.json.body.data.fields[3].value === 1 ? '1 item' : $('Webhook').item.json.body.data.fields[3].value + ' items' }}", "type": "string" },
+            { "id": "14befc62-eeca-476c-8029-181161298219", "name": "itemsList", "value": "={{ $('Webhook').item.json.body.data.fields[4].value }}", "type": "string" },
+            { "id": "fd6b6cb4-9e1c-4952-b6dd-f4bc6d412f56", "name": "totalAmount", "value": "={{ $('Webhook').item.json.body.data.fields[9].value }}", "type": "number" },
+            { "id": "c881187d-654d-4abf-a26c-19ad5d5a21f3", "name": "phone", "value": "={{ $('Webhook').item.json.body.data.fields[1].value }}", "type": "string" },
+            { "id": "5c93079c-575c-4d81-a2ef-d7d9e9d67d41", "name": "contactChannel", "value": "={{ (() => { const f = $('Webhook').item.json.body.data.fields.find(x => x.label === \"How should we reach you with updates?\"); return f.options.find(o => o.id === f.value[0]).text; })() }}", "type": "string" }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [1056, -16],
+      "id": "9de46f51-23ba-4e80-bf36-51fbe6fe57e0",
+      "name": "Build Invoice Message"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3 },
+          "conditions": [
+            { "id": "d38ff0fb-d4e4-4a78-a4bb-56ba7c7df121", "leftValue": "={{ $json.contactChannel }}", "rightValue": "WhatsApp", "operator": { "type": "string", "operation": "equals" } }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [1264, -32],
+      "id": "b2bdb109-c276-427d-ab23-363018bf9082",
+      "name": "Check contactChannel"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": { "__rl": true, "value": "={{ $('Get many database pages').item.json.id }}", "mode": "id" },
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Phone|phone_number", "phoneValue": "={{ $('Webhook').item.json.body.data.fields[1].value }}" },
+            { "key": "Contact Channel|select", "selectValue": "={{ (() => { const f = $('Webhook').item.json.body.data.fields.find(x => x.label === \"How should we reach you with updates?\"); return f.options.find(o => o.id === f.value[0]).text; })() }}" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [624, -16],
+      "id": "b646920f-fcb7-4ba2-ad21-ac16942a4d86",
+      "name": "Update a database page",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2500,
+      "credentials": {
+        "notionApi": { "id": "REDACTED", "name": "kulz order-communication" }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://v4.api.termii.com/api/sms/send",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "to", "value": "={{ $json.phone.replace('+', '') }}" },
+            { "name": "from", "value": "OE Alert" },
+            { "name": "sms", "value": "=Hi {{ $json.property_name }}, thank you for bringing your laundry to us.\n\nOrder: {{ $json.itemPhrase }}: {{ $json.itemsList }}\nTotal: N{{ $json.totalAmount }}\n\nPay to: [REDACTED — customer's payment details]\n\nWe'll message you again once it's ready.\nKULZ LAUNDRY" },
+            { "name": "type", "value": "plain" },
+            { "name": "channel", "value": "generic" },
+            { "name": "api_key", "value": "REDACTED" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [1488, 48],
+      "id": "b388f71f-305f-4217-bd4d-2dc50f201357",
+      "name": "Send SMS"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://evolution-api-spit.srv1973575.hstgr.cloud/message/sendText/kulz_laundry",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"number\": $json.phone.replace('+',''), \"text\": \"Hi \" + $json.customerName + \", thank you for bringing your laundry to us.\\n\\nOrder: \" + $json.itemPhrase + \": \" + $json.itemsList + \"\\nTotal: N\" + $json.totalAmount + \"\\n\\nPay to: [REDACTED]\\n\\nWe'll message you again once it's ready.\\nKULZ LAUNDRY\", \"delay\": Math.floor(Math.random()*2500)+3000 } }}",
+        "options": {}
+      },
+      "id": "a1178b1f-e6b7-4a4c-949b-68fa78b711e6",
+      "name": "Send WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [1472, -160],
+      "credentials": {
+        "httpHeaderAuth": { "id": "REDACTED", "name": "Evolution API - kulz_laundry" }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Get many database pages", "type": "main", "index": 0 }]] },
+    "Get many database pages": { "main": [[{ "node": "Customer exists?", "type": "main", "index": 0 }]] },
+    "Create Customer": { "main": [[{ "node": "Create Order", "type": "main", "index": 0 }]] },
+    "Create Order": { "main": [[{ "node": "Build Invoice Message", "type": "main", "index": 0 }]] },
+    "Customer exists?": { "main": [[{ "node": "Update a database page", "type": "main", "index": 0 }], [{ "node": "Create Customer", "type": "main", "index": 0 }]] },
+    "Build Invoice Message": { "main": [[{ "node": "Check contactChannel", "type": "main", "index": 0 }]] },
+    "Check contactChannel": { "main": [[{ "node": "Send WhatsApp", "type": "main", "index": 0 }], [{ "node": "Send SMS", "type": "main", "index": 0 }]] },
+    "Update a database page": { "main": [[{ "node": "Create Order", "type": "main", "index": 0 }]] }
+  }
+}

@@ -1,0 +1,223 @@
+{
+  "name": "Kulz's Merge Duplicate Customers",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": { "item": [{ "mode": "everyMinute" }] },
+        "dataSourceId": { "__rl": true, "value": "REDACTED", "mode": "list", "cachedResultName": "Customers", "cachedResultUrl": "REDACTED" }
+      },
+      "id": "de100b0c-9fff-47c0-a5af-17403bec32e1",
+      "name": "New Customer Created",
+      "type": "n8n-nodes-base.notionTrigger",
+      "typeVersion": 1.1,
+      "position": [-464, -80],
+      "credentials": { "notionApi": { "id": "REDACTED", "name": "kulz order-communication" } }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage", "operation": "getAll",
+        "dataSourceId": { "__rl": true, "value": "REDACTED", "mode": "list", "cachedResultName": "Customers", "cachedResultUrl": "REDACTED" },
+        "returnAll": true,
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            { "key": "Phone|phone_number", "condition": "equals", "richTextValue": "={{ $json.Phone }}" },
+            { "key": "Name|title", "condition": "equals", "richTextValue": "={{ $json.Name }}" }
+          ]
+        },
+        "options": { "sort": { "sortValue": [{ "timestamp": true, "key": "last_edited_time", "direction": "descending" }] } }
+      },
+      "id": "697d6d5e-0201-4a99-a99d-e26f15fe4936",
+      "name": "Find Matching Customers",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [-176, -80],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2500,
+      "credentials": { "notionApi": { "id": "REDACTED", "name": "kulz order-communication" } }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3 },
+          "conditions": [{ "leftValue": "={{ $json.matchType }}", "operator": { "type": "string", "operation": "equals" }, "rightValue": "phone", "id": "40c6e10e-c70c-452c-bc4a-34c0041c8b5a" }],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "41331d9c-5e81-4e94-94cd-2f0349f48a8c",
+      "name": "Is Exact Phone Match?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [352, -80]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage", "operation": "update",
+        "pageId": { "__rl": true, "mode": "id", "value": "={{ $('Same Name or Phone No?').item.json.oldPageId }}" },
+        "propertiesUi": { "propertyValues": [{ "key": "Name|title", "title": "={{ $('Same Name or Phone No?').item.json.newName }}" }] },
+        "options": {}
+      },
+      "id": "8abee57f-1768-44bd-8899-892008646ded",
+      "name": "Update Old Customer Name (Phone Match)",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [592, -288],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2500,
+      "credentials": { "notionApi": { "id": "REDACTED", "name": "kulz order-communication" } }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage", "operation": "getAll",
+        "dataSourceId": { "__rl": true, "value": "REDACTED", "mode": "list", "cachedResultName": "Orders", "cachedResultUrl": "REDACTED" },
+        "returnAll": true,
+        "filterType": "manual",
+        "filters": { "conditions": [{ "key": "Customer|relation", "condition": "contains", "relationValue": "={{ $('Same Name or Phone No?').item.json.newPageId }}" }] },
+        "options": {}
+      },
+      "id": "ba000009-51eb-4612-8cbb-25d2c127e55b",
+      "name": "Find Orders On New Customer",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [1424, -256],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2500,
+      "credentials": { "notionApi": { "id": "REDACTED", "name": "kulz order-communication" } }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage", "operation": "update",
+        "pageId": { "__rl": true, "mode": "id", "value": "={{ $json.id }}" },
+        "propertiesUi": { "propertyValues": [{ "key": "Customer|relation", "relationValue": ["={{ $('Same Name or Phone No?').item.json.oldPageId }}"] }] },
+        "options": {}
+      },
+      "id": "b9b261b8-f548-475d-9d8f-0dacd9994454",
+      "name": "Point Order To Old Customer",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [1632, -256],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2500,
+      "credentials": { "notionApi": { "id": "REDACTED", "name": "kulz order-communication" } }
+    },
+    {
+      "parameters": { "operation": "archive", "pageId": { "__rl": true, "mode": "id", "value": "={{ $('Same Name or Phone No?').item.json.newPageId }}" } },
+      "id": "a8145a6b-64ca-4d0e-b0ec-c1cb59e9cff3",
+      "name": "Archive Duplicate Customer",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [1840, -208],
+      "executeOnce": true,
+      "credentials": { "notionApi": { "id": "REDACTED", "name": "kulz order-communication" } }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3 },
+          "conditions": [{ "leftValue": "={{ $json.matchType }}", "operator": { "type": "string", "operation": "equals" }, "rightValue": "name", "id": "50b12f68-a34d-424a-ae52-476106e9a2e5" }],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e129a268-528a-401f-9cfd-c83017e43107",
+      "name": "Is Same Name, Different Number?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [592, 144]
+    },
+    {
+      "parameters": {},
+      "id": "5d18f582-b14b-41a3-bab8-b54861caf5ff",
+      "name": "New Customer - No Duplicate",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [592, 384]
+    },
+    {
+      "parameters": {
+        "jsCode": "const newPage = $('New Customer Created').first().json;\nconst candidates = $input.all().map((item) => item.json).filter((c) => c.id !== newPage.id);\n\nfunction normalizePhone(p) {\n  if (!p) return '';\n  let digits = String(p).replace(/\\D/g, '');\n  if (digits.indexOf('234') === 0) digits = digits.slice(3);\n  else if (digits.indexOf('0') === 0) digits = digits.slice(1);\n  return digits;\n}\n\nfunction normalizeName(n) {\n  return String(n || '').trim().toLowerCase();\n}\n\nconst newPhoneNorm = normalizePhone(newPage.Phone);\nconst newNameNorm = normalizeName(newPage.Name);\n\nconst phoneMatch = candidates.find((c) => newPhoneNorm !== '' && normalizePhone(c.property_phone) === newPhoneNorm);\nconst nameMatch = phoneMatch ? null : candidates.find((c) => newNameNorm !== '' && normalizeName(c.property_name) === newNameNorm);\n\nlet matchType = 'none';\nlet oldPageId = null;\nif (phoneMatch) {\n  matchType = 'phone';\n  oldPageId = phoneMatch.id;\n} else if (nameMatch) {\n  matchType = 'name';\n  oldPageId = nameMatch.id;\n}\n\nreturn [{ json: { matchType: matchType, oldPageId: oldPageId, newPageId: newPage.id, newName: newPage.Name, newPhone: newPage.Phone } }];"
+      },
+      "id": "31966ef1-bd2c-43dd-94bf-15aac6668740",
+      "name": "Same Name or Phone No?",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [112, -80]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "REDACTED",
+        "message": "=A new laundry order just came in for {{ $('Same Name or Phone No?').item.json.newName }} using a different phone number ({{ $('Same Name or Phone No?').item.json.newPhone }}). We already have a customer with that same name saved. Is this the same person reaching out from a new number?",
+        "approvalOptions": { "values": { "approvalType": "double", "approveLabel": "Yes, same person", "disapproveLabel": "No, different person" } },
+        "options": {}
+      },
+      "id": "fc110b01-4703-4330-849a-bb12a0908256",
+      "name": "Ask Kulz - Same Person?",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [832, 48],
+      "webhookId": "0baedcb9-dbe0-438b-bb51-848feba15e14",
+      "credentials": { "telegramApi": { "id": "REDACTED", "name": "Outreach-follow-up bot" } }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3 },
+          "conditions": [{ "id": "c18c6fcc-2d97-49a1-ac1a-fbd9e15d0595", "leftValue": "={{ $json.data.approved }}", "operator": { "type": "boolean", "operation": "equals" }, "rightValue": true }],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "898c0f76-dc9d-4d16-b8df-dbc156c42da4",
+      "name": "Did Kulz Say Yes?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [1072, 48]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage", "operation": "update",
+        "pageId": { "__rl": true, "mode": "id", "value": "={{ $('Same Name or Phone No?').item.json.oldPageId }}" },
+        "propertiesUi": {
+          "propertyValues": [
+            { "key": "Name|title", "title": "={{ $('Same Name or Phone No?').item.json.newName }}" },
+            { "key": "Phone|phone_number", "phoneValue": "={{ $('Same Name or Phone No?').item.json.newPhone }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "47efebe1-e7eb-44fb-838c-33fbbba82a8a",
+      "name": "Update Old Customer Name and Phone (Name Match Approved)",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 3,
+      "position": [1296, -48],
+      "credentials": { "notionApi": { "id": "REDACTED", "name": "kulz order-communication" } }
+    },
+    {
+      "parameters": {},
+      "id": "c03e09df-9d69-4a6c-bd6c-a87fd15c9da8",
+      "name": "Discard - Different People",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1312, 208]
+    }
+  ],
+  "connections": {
+    "New Customer Created": { "main": [[{ "node": "Find Matching Customers", "type": "main", "index": 0 }]] },
+    "Find Matching Customers": { "main": [[{ "node": "Same Name or Phone No?", "type": "main", "index": 0 }]] },
+    "Is Exact Phone Match?": { "main": [[{ "node": "Update Old Customer Name (Phone Match)", "type": "main", "index": 0 }], [{ "node": "Is Same Name, Different Number?", "type": "main", "index": 0 }]] },
+    "Update Old Customer Name (Phone Match)": { "main": [[{ "node": "Find Orders On New Customer", "type": "main", "index": 0 }]] },
+    "Find Orders On New Customer": { "main": [[{ "node": "Point Order To Old Customer", "type": "main", "index": 0 }]] },
+    "Point Order To Old Customer": { "main": [[{ "node": "Archive Duplicate Customer", "type": "main", "index": 0 }]] },
+    "Is Same Name, Different Number?": { "main": [[{ "node": "Ask Kulz - Same Person?", "type": "main", "index": 0 }], [{ "node": "New Customer - No Duplicate", "type": "main", "index": 0 }]] },
+    "Same Name or Phone No?": { "main": [[{ "node": "Is Exact Phone Match?", "type": "main", "index": 0 }]] },
+    "Ask Kulz - Same Person?": { "main": [[{ "node": "Did Kulz Say Yes?", "type": "main", "index": 0 }]] },
+    "Did Kulz Say Yes?": { "main": [[{ "node": "Update Old Customer Name and Phone (Name Match Approved)", "type": "main", "index": 0 }], [{ "node": "Discard - Different People", "type": "main", "index": 0 }]] },
+    "Update Old Customer Name and Phone (Name Match Approved)": { "main": [[{ "node": "Find Orders On New Customer", "type": "main", "index": 0 }]] }
+  }
+}
