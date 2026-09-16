@@ -1,0 +1,32 @@
+{
+  "name": "Client Error Notification",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a5df195f-50a3-4990-a533-dd8cf06a29ed",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [240, 304]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": { "__rl": true, "value": "REDACTED", "mode": "id", "cachedResultName": "client-error-notification" },
+        "text": "=<@REDACTED> 🚨 Client workflow failed\nWorkflow: {{ $json.workflow.name }}\nFailed at node: {{ $json.execution.lastNodeExecuted }}\nError: {{ $json.execution.error.message }}\nExecution: {{ $json.execution.url }}",
+        "otherOptions": {}
+      },
+      "id": "15d4ab2e-9923-45f6-9716-aba9e66c9b9e",
+      "name": "Notify Client Error Channel",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [448, 304],
+      "credentials": { "slackApi": { "id": "REDACTED", "name": "Slack account" } }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [[{ "node": "Notify Client Error Channel", "type": "main", "index": 0 }]]
+    }
+  }
+}

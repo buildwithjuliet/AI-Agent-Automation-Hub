@@ -32,6 +32,12 @@ A Tally intake form that staff fill out per order, feeding straight into a Notio
 **Duplicate customer merge**
 ![Merge duplicate customers workflow](./merge-duplicate-customers-architecture.png)
 
+## Reliability
+
+Every Notion read and update call in both the order and status workflows retries automatically up to 3 times, 2.5 seconds apart, before it's treated as a real failure, a slow response or a momentary hiccup isn't enough to break an order.
+
+If something does fail past that point, a shared error workflow catches it, this one isn't specific to Kulz, it's the same error handler wired into every client workflow I run. It posts straight to a private Slack channel with the workflow name, the exact node that failed, the error message, and a direct link to the execution, so a real problem gets found and fixed before the business even notices, not after a customer complains.
+
 ## Design Decisions
 
 These aren't bugs that got fixed. They're places where the system was deliberately built around how people actually behave, not how a clean database would prefer they behave.
@@ -59,5 +65,6 @@ By the time this was discovered, the business was already using the system for r
 - [order-workflow.json](./order-workflow.json)
 - [communication-workflow.json](./communication-workflow.json)
 - [merge-duplicate-customers-workflow.json](./merge-duplicate-customers-workflow.json)
+- [error-workflow.json](./error-workflow.json)
 
-Credentials and API keys are redacted in all three exports.
+Credentials and API keys are redacted in all four exports.
