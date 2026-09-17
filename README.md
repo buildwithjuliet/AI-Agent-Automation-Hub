@@ -30,6 +30,8 @@ I am not just writing code; I am building systems that work for you. I focus on:
 
 ## Let's connect
 
+![let's connect](assets/footer-cta.svg)
+
 I am always looking to connect with founders who are ready to stop managing tasks and start scaling their impact. If you want to see how an AI agent can transform your daily workflow, let's talk.
 
-kosy@buildwithjuliet.com
+kosy@buildwithjuliet.com &middot; [buildwithjuliet.com](https://buildwithjuliet.com)
