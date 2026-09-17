@@ -2,7 +2,7 @@
 
 # buildwithjuliet
 
-I build AI agents that handle the repetitive executive work founders keep paying people to do. Inbox. Calendar. Research. Onboarding.
+I build AI agents and automation that handle the repetitive admin and operational work founders keep paying people to do. Inbox. Orders & CRM. Content. Outreach.
 
 ## Why I build these
 
@@ -21,7 +21,8 @@ I am not just writing code; I am building systems that work for you. I focus on:
 ## Projects
 
 - **[SmartInboxCleanup](./SmartInboxCleanup)** — an on-demand AI agent that deep-cleans an existing Gmail backlog in one pass. Stress-tested live on a real 18,000+ email inbox, with self-healing error recovery so a dropped connection never leaves a customer's cleanup stuck. [Full build log & incident postmortem →](./SmartInboxCleanup) · [Try it live](https://smartinboxcleanup.buildwithjuliet.com/)
-- **SmartInboxTriage** — an always-on inbox agent, RAG-powered (Groq + Cohere + Supabase), that reads incoming email, replies from a knowledge base, and escalates to me over WhatsApp the moment it's genuinely unsure. Actively being tuned against real founder workflows.
+- **[Order & Customer Communication — Kulz Laundry](./Order%20%26%20Customer%20Communication%20%E2%80%94%20Kulz%20Laundry)** — an end to end order intake, invoicing, and status communication system for a laundry business, replacing a fully manual paper and WhatsApp process. Includes a duplicate-customer merge system that escalates ambiguous cases to a human instead of guessing. [Full build log →](./Order%20%26%20Customer%20Communication%20%E2%80%94%20Kulz%20Laundry)
+- **[SmartInboxTriage](./SmartInboxTriage)** — an always-on inbox agent, RAG-powered (Claude + Cohere + Supabase), that reads incoming email, replies from a knowledge base, and escalates to me over Telegram the moment it's genuinely unsure. Actively being tuned against real founder workflows.
 - **[LinkedIn Post AI Agent — MyOwnAlgo](./LinkedIn%20Post%20AI%20Agent)** — turns raw rants (captured on Telegram) into LinkedIn posts in my own voice, grounded in LinkedIn's own engineering research on feed ranking, with optional image generation and a human approval gate before anything goes live. [Full build log →](./LinkedIn%20Post%20AI%20Agent)
 - **[Outreach Follow-Up Reminder](./Outreach%20Follow-Up%20Reminder)** — a daily agent that catches stale leads before they're forgotten: checks a lead pipeline every morning, filters to what's actually overdue, and pushes a reminder straight to Telegram instead of relying on anyone remembering to look.
 
