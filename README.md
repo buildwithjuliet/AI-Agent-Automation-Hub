@@ -1,4 +1,4 @@
-![banner](github-banner-preview.png)
+![welcome](assets/welcome-mat.svg)
 
 # buildwithjuliet
 
