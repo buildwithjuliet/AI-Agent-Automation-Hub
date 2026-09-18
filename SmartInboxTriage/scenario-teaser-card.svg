@@ -1,0 +1,38 @@
+<svg width="1200" height="420" viewBox="0 0 1200 420" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1c130d"/>
+      <stop offset="55%" stop-color="#3a281c"/>
+      <stop offset="100%" stop-color="#2a1c13"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="420" rx="14" fill="url(#bg)"/>
+  <rect x="0.75" y="0.75" width="1198.5" height="418.5" rx="13.5" fill="none" stroke="#e08a4f" stroke-opacity="0.4" stroke-width="1.5"/>
+
+  <text x="40" y="46" font-family="Inter,system-ui,sans-serif" font-size="14" font-weight="800" letter-spacing="1.2" fill="#e6935a">FIVE LIVE TEST SCENARIOS</text>
+  <line x1="40" y1="60" x2="1160" y2="60" stroke="#e08a4f" stroke-opacity="0.35" stroke-width="1"/>
+
+  <text x="40" y="86" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" letter-spacing="0.8" fill="#b89871">SCENARIO</text>
+  <text x="480" y="86" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" letter-spacing="0.8" fill="#b89871">WHAT HAPPENED</text>
+
+  <g font-family="Inter,system-ui,sans-serif">
+    <rect x="40" y="102" width="1120" height="60" rx="8" fill="#e08a4f" fill-opacity="0.06"/>
+    <text x="56" y="128" font-size="17" font-weight="800" fill="#f7efe2">1 &amp; 3 &#183; Urgent partnership request</text>
+    <text x="480" y="128" font-size="15" font-weight="500" fill="#d9c6ae">Escalates immediately, doesn&#8217;t guess</text>
+
+    <rect x="40" y="174" width="1120" height="60" rx="8" fill="#ffffff" fill-opacity="0.02"/>
+    <text x="56" y="200" font-size="17" font-weight="800" fill="#f7efe2">2 &#183; Non-urgent collab idea</text>
+    <text x="480" y="200" font-size="15" font-weight="500" fill="#d9c6ae">Filed quietly, no interruption</text>
+
+    <rect x="40" y="246" width="1120" height="60" rx="8" fill="#e08a4f" fill-opacity="0.06"/>
+    <text x="56" y="272" font-size="17" font-weight="800" fill="#f7efe2">4 &#183; &#8220;Are you free this week?&#8221;</text>
+    <text x="480" y="272" font-size="15" font-weight="500" fill="#d9c6ae">Asks for context first, one hiccup along the way</text>
+
+    <rect x="40" y="318" width="1120" height="60" rx="8" fill="#ffffff" fill-opacity="0.02"/>
+    <text x="56" y="344" font-size="17" font-weight="800" fill="#f7efe2">5 &#183; Pricing question, RAG went down</text>
+    <text x="480" y="344" font-size="15" font-weight="500" fill="#d9c6ae">Real infrastructure failure, handled without breaking</text>
+  </g>
+
+  <text x="600" y="402" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="15" font-weight="800" fill="#e6935a">Full breakdown, videos included, in the case study &#8594;</text>
+</svg>
