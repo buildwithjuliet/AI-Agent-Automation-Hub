@@ -1,0 +1,227 @@
+{
+  "name": "SmartInboxTriage",
+  "description": "An email management agent that flags urgent emails, maintains zero inbox, replies to only important emails based on resources given to it",
+  "nodes": [
+    {
+      "parameters": { "pollTimes": { "item": [{ "mode": "everyMinute" }] }, "filters": {} },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [-1824, -16],
+      "id": "08bfe5d4-1f11-45d0-99e9-58c35f207860",
+      "name": "Gmail Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "[redacted on purpose. this is the part that actually took work. want it? book a discovery call and I'll walk you through it]",
+        "options": {
+          "systemMessage": "[redacted on purpose. this is the part that actually took work. want it? book a discovery call and I'll walk you through it]",
+          "maxIterations": 15
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [-912, -272],
+      "id": "578edb68-51c6-41e8-8e01-d8dcab2d090c",
+      "name": "AI Agent",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": { "sessionIdType": "customKey", "sessionKey": "={{ $json.threadId }}", "contextWindowLength": 10 },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [-896, -16],
+      "id": "14306bcb-bb52-4dad-9293-79296919ee9c",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": "={{ [$fromAI('labelId', 'Which label to add. Use Label_6813616298827576395 for Urgent for Julie, or Label_2333872629923268335 for awaiting response', 'string')] }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [-512, 0],
+      "id": "c1283e7d-e57d-4841-bd63-5bc0123f1eee",
+      "name": "Add label to message in Gmail"
+    },
+    {
+      "parameters": { "resource": "thread", "operation": "get", "threadId": "={{ $json.threadId }}", "options": { "returnOnlyMessages": true } },
+      "id": "be6a95c8-4c1c-4339-87e0-225af681db2a",
+      "name": "Get Thread",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [-1632, -32]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3 },
+          "conditions": [
+            { "id": "fc29c008-8da3-4b63-b1ab-1f9ac70e002d", "leftValue": "={{ $json.alreadyReplied }}", "rightValue": true, "operator": { "type": "boolean", "operation": "equals" } },
+            { "id": "b2c3d4e5-0002-4000-8000-000000000002", "leftValue": "={{ $json.awaitingReason }}", "rightValue": false, "operator": { "type": "boolean", "operation": "equals" } }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4b785c57-7bc6-4bfa-92b5-54c0109c96cf",
+      "name": "Check If Already Replied",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [-1280, 16]
+    },
+    {
+      "parameters": {},
+      "id": "540ee03b-d2ef-4861-a824-a07c5d356916",
+      "name": "Stop - Already Replied",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [-1136, 272]
+    },
+    {
+      "parameters": {
+        "operation": "removeLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": "={{ [$fromAI('labelId', 'Which label to remove. Use INBOX to archive the email, or Label_2333872629923268335 to clear the awaiting response label once a reason has come back', 'string')] }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [-208, -16],
+      "id": "7b0c5a59-4c98-4dd8-acaa-f9d970753a58",
+      "name": "Remove label from message in Gmail"
+    },
+    {
+      "parameters": { "operation": "reply", "messageId": "={{ $json.id }}", "message": "={{ $fromAI('message') }}", "options": {} },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [-368, 0],
+      "id": "a62e5589-3603-42ba-97de-b6ee7bc33de4",
+      "name": "Reply to a message in Gmail"
+    },
+    {
+      "parameters": {
+        "operation": "removeLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": "={{ $('Gmail Trigger').item.json.labels[1].name }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [-960, 272],
+      "id": "de444b25-717f-40a8-8133-b66fbf15493d",
+      "name": "Remove label from message"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search BuildWithJuliet's knowledge base to find the answer when a real person emails asking about the brand, services, or pricing. Use this before replying to general business inquiries.",
+        "tableName": { "__rl": true, "value": "rpc/match_documents", "mode": "list", "cachedResultName": "rpc/match_documents" },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [-784, -32],
+      "id": "28e7de1c-5371-4ffa-891e-7845eb6a85ef",
+      "name": "Supabase Vector Store"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsCohere",
+      "typeVersion": 1,
+      "position": [-624, 192],
+      "id": "54a14c84-1549-4998-b741-42da80bf0117",
+      "name": "Embeddings Cohere"
+    },
+    {
+      "parameters": {
+        "dataTableId": { "__rl": true, "value": "[redacted]", "mode": "list", "cachedResultName": "SmartInboxTriage Activity Log" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sender": "={{ $fromAI('sender', ``, 'string') }}",
+            "category": "={{ $fromAI('category', ``, 'string') }}",
+            "action_taken": "={{ $fromAI('action_taken', ``, 'string') }}",
+            "timestamp": "={{ $now }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            { "id": "sender", "displayName": "sender", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "category", "displayName": "category", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "action_taken", "displayName": "action_taken", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "timestamp", "displayName": "timestamp", "required": false, "defaultMatch": false, "display": true, "type": "dateTime", "readOnly": false, "removed": false }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [112, 0],
+      "id": "029834bb-ba05-4001-907d-e6f747c15aef",
+      "name": "Insert row in Data table"
+    },
+    {
+      "parameters": {
+        "jsCode": "const triggerId = $('Gmail Trigger').item.json.id;\nconst threadItems = $input.all().map(i => i.json);\n\nconst alreadyReplied = threadItems.some(msg =>\n  (msg.labels || []).some(l => l.name === 'SENT')\n);\n\nconst awaitingReason = threadItems.some(msg =>\n  (msg.labels || []).some(l => l.name === 'awaiting response')\n);\n\nconst originalMessage = threadItems.find(msg => msg.id === triggerId) || threadItems[0];\n\nreturn [{\n  json: {\n    ...originalMessage,\n    alreadyReplied,\n    awaitingReason\n  }\n}];"
+      },
+      "id": "592f5e8c-a3cb-4e55-b718-306737471e36",
+      "name": "Check Thread For SENT Label",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-1440, -32]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "[redacted]",
+        "message": "=🚨 {{ $fromAI('category', 'Category of the email: Urgent, Meeting, or Lead', 'string') }}\n\nFrom: {{ $fromAI('sender', 'The senders name or email address', 'string') }}\nSubject: {{ $fromAI('subject', 'The email subject line', 'string') }}\n\n{{ $fromAI('snippet', 'A short snippet of the email body, or the stated reason for a meeting request', 'string') }}\n\nOpen: {{ $fromAI('link', 'The Gmail thread link to open this email', 'string') }}",
+        "approvalOptions": { "values": { "approvalType": "double", "approveLabel": "✅ Yes", "disapproveLabel": "❌ No" } },
+        "chatApproval": false,
+        "approverIds": null,
+        "options": { "appendAttribution": false }
+      },
+      "id": "57530e90-5b59-4528-8b0f-81e836d34db3",
+      "name": "Send Telegram Escalation",
+      "type": "n8n-nodes-base.telegramTool",
+      "typeVersion": 1.2,
+      "position": [-48, -16]
+    },
+    {
+      "parameters": { "model": { "__rl": true, "mode": "list", "value": "claude-sonnet-5", "cachedResultName": "Claude Sonnet 5" }, "options": {} },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.6,
+      "position": [-1056, 0],
+      "id": "5383eb51-91f5-4222-9d28-dc8789ce4df9",
+      "name": "Anthropic Chat Model"
+    },
+    {
+      "parameters": { "amount": 60 },
+      "id": "cd7988f1-f8fc-45b5-9755-9c8f01582735",
+      "name": "Wait 3 Min Before Reply",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [-1120, -208]
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": { "main": [[{ "node": "Get Thread", "type": "main", "index": 0 }]] },
+    "Simple Memory": { "ai_memory": [[{ "node": "AI Agent", "type": "ai_memory", "index": 0 }]] },
+    "Add label to message in Gmail": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
+    "Check If Already Replied": { "main": [[{ "node": "Stop - Already Replied", "type": "main", "index": 0 }], [{ "node": "Wait 3 Min Before Reply", "type": "main", "index": 0 }]] },
+    "Remove label from message in Gmail": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
+    "Reply to a message in Gmail": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
+    "Stop - Already Replied": { "main": [[{ "node": "Remove label from message", "type": "main", "index": 0 }]] },
+    "Embeddings Cohere": { "ai_embedding": [[{ "node": "Supabase Vector Store", "type": "ai_embedding", "index": 0 }]] },
+    "Supabase Vector Store": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
+    "Insert row in Data table": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
+    "Get Thread": { "main": [[{ "node": "Check Thread For SENT Label", "type": "main", "index": 0 }]] },
+    "Check Thread For SENT Label": { "main": [[{ "node": "Check If Already Replied", "type": "main", "index": 0 }]] },
+    "Send Telegram Escalation": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] },
+    "Anthropic Chat Model": { "ai_languageModel": [[{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }]] },
+    "Wait 3 Min Before Reply": { "main": [[{ "node": "AI Agent", "type": "main", "index": 0 }]] }
+  }
+}

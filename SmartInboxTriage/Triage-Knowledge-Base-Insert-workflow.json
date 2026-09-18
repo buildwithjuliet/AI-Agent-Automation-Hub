@@ -1,0 +1,84 @@
+{
+  "name": "Triage Knowledge Base - Insert",
+  "description": "One-time/manual workflow that loads the Triage knowledge base Google Doc, splits it into chunks, embeds each chunk with Cohere, and inserts them into the Supabase vector store (documents table) for semantic search.",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "cf618b49-9bcd-43a5-84c2-37b536dd4846",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 304]
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": { "folderId": { "__rl": true, "value": "[redacted]", "mode": "list", "cachedResultName": "[redacted]" } },
+        "whatToSearch": "files",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [512, 304],
+      "id": "83bba5b2-9f97-42a2-9e2e-5d7968df3cfa",
+      "name": "Search files and folders"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": { "__rl": true, "value": "={{ $json.id }}", "mode": "id" },
+        "options": { "googleFileConversion": { "conversion": { "docsToFormat": "text/plain", "slidesToFormat": "application/pdf" } } }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [752, 304],
+      "id": "c47baafc-e3c5-4e27-a8f6-3ae61efdde47",
+      "name": "Download file"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": { "__rl": true, "mode": "list", "value": "documents", "cachedResultName": "documents" },
+        "options": { "queryName": "match_documents" }
+      },
+      "id": "523e2788-270d-4855-9463-499048cca073",
+      "name": "Insert Into Knowledge Base",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [1024, 304]
+    },
+    {
+      "parameters": { "modelName": "embed-english-v3.0" },
+      "id": "fe18c602-5e30-4e69-b21f-8668b8c33a6a",
+      "name": "Cohere Embeddings",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsCohere",
+      "typeVersion": 1,
+      "position": [848, 560]
+    },
+    {
+      "parameters": { "dataType": "binary", "textSplittingMode": "custom", "options": {} },
+      "id": "dc4daaa8-3dc6-4d26-8926-7cc507517611",
+      "name": "Load Doc Content",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [1008, 528]
+    },
+    {
+      "parameters": { "chunkOverlap": 200, "options": {} },
+      "id": "9acb852e-aeee-473e-bb7a-ba664c4ef17d",
+      "name": "Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [1040, 704]
+    }
+  ],
+  "connections": {
+    "Start": { "main": [[{ "node": "Search files and folders", "type": "main", "index": 0 }]] },
+    "Cohere Embeddings": { "ai_embedding": [[{ "node": "Insert Into Knowledge Base", "type": "ai_embedding", "index": 0 }]] },
+    "Load Doc Content": { "ai_document": [[{ "node": "Insert Into Knowledge Base", "type": "ai_document", "index": 0 }]] },
+    "Text Splitter": { "ai_textSplitter": [[{ "node": "Load Doc Content", "type": "ai_textSplitter", "index": 0 }]] },
+    "Search files and folders": { "main": [[{ "node": "Download file", "type": "main", "index": 0 }]] },
+    "Download file": { "main": [[{ "node": "Insert Into Knowledge Base", "type": "main", "index": 0 }]] }
+  }
+}

@@ -1,0 +1,133 @@
+{
+  "name": "Triage - Trash Check",
+  "description": "Daily check of the Activity Log. Finds senders archived 5+ times in 14 days with no reply, asks Julie on Telegram whether to trash future mail from them, and creates a Gmail filter to do it if confirmed.",
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [{ "triggerAtHour": 9 }] } },
+      "id": "58205f15-1786-4617-8a8f-34571b9c26b4",
+      "name": "Daily 9AM Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [240, 304]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": { "__rl": true, "mode": "id", "value": "[redacted]", "cachedResultName": "SmartInboxTriage Activity Log" },
+        "returnAll": true,
+        "filters": { "conditions": [{ "keyName": "timestamp", "condition": "gte", "keyValue": "={{ $now.minus({ days: 14 }).toISO() }}" }] }
+      },
+      "id": "2877bfa0-f0ea-432e-9a19-f03543d7f055",
+      "name": "Get Activity Log Rows",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [544, 304]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map(item => item.json);\nconst now = new Date();\nconst cutoff = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);\n\nconst askedSenders = new Set(\n  rows.filter(r => r.category === 'UnsubscribeAsked').map(r => r.sender)\n);\n\nconst archiveCounts = {};\nfor (const r of rows) {\n  const action = (r.action_taken || '').toLowerCase();\n  const isSilentArchive = action.includes('archiv') && !action.includes('repl');\n  const inWindow = r.timestamp && new Date(r.timestamp) >= cutoff;\n  if (isSilentArchive && inWindow && r.sender) {\n    archiveCounts[r.sender] = (archiveCounts[r.sender] || 0) + 1;\n  }\n}\n\nconst candidates = [];\nfor (const [sender, count] of Object.entries(archiveCounts)) {\n  if (count >= 5 && !askedSenders.has(sender)) {\n    candidates.push({ json: { sender, count } });\n  }\n}\n\nreturn candidates;"
+      },
+      "id": "ff17a204-67ef-4535-99a9-6d8797d1c172",
+      "name": "Find Unsubscribe Candidates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [848, 304]
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const raw = item.json.sender || '';\n  const match = raw.match(/<([^>]+)>/);\n  const email = match ? match[1] : raw.trim();\n  return { json: { ...item.json, senderEmail: email } };\n});"
+      },
+      "id": "ddbac461-92d2-42bc-9619-ed675ddf1800",
+      "name": "Extract Sender Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1056, 304]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "[redacted]",
+        "message": "=📭 {{ $json.sender }} has sent {{ $json.count }} emails you've silently archived in the last 2 weeks with no reply.\n\nWant me to unsubscribe you from this sender? This will create a Gmail filter that auto-trashes future emails from them.",
+        "approvalOptions": { "values": { "approvalType": "double", "approveLabel": "✅ Yes, unsubscribe", "disapproveLabel": "❌ No, keep" } },
+        "chatApproval": false,
+        "approverIds": null,
+        "options": {}
+      },
+      "id": "28dea549-835e-455c-84d0-5ee36d337d7d",
+      "name": "Ask To Trash",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1264, 208]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3 },
+          "conditions": [{ "id": "a1b2c3d4-0001-4000-8000-000000000001", "leftValue": "={{ $json.data.approved }}", "rightValue": true, "operator": { "type": "boolean", "operation": "equals" } }],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f8992b4a-6faf-4694-8e61-b0254da9c2e0",
+      "name": "Check Approval",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [1472, 208]
+    },
+    {
+      "parameters": {
+        "dataTableId": { "__rl": true, "mode": "id", "value": "[redacted]", "cachedResultName": "SmartInboxTriage Activity Log" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sender": "={{ $('Find Unsubscribe Candidates').item.json.sender }}",
+            "category": "UnsubscribeAsked",
+            "action_taken": "Asked",
+            "timestamp": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            { "id": "sender", "displayName": "sender", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "category", "displayName": "category", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "action_taken", "displayName": "action_taken", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "timestamp", "displayName": "timestamp", "required": false, "defaultMatch": false, "display": true, "type": "dateTime", "readOnly": false, "removed": false }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "5bb90c70-57fc-442d-8c7a-f1652d267961",
+      "name": "Mark Sender As Asked",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [1680, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/settings/filters",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gmailOAuth2",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"criteria\": { \"from\": $('Extract Sender Email').item.json.senderEmail }, \"action\": { \"removeLabelIds\": [\"INBOX\"], \"addLabelIds\": [\"TRASH\"] } } }}",
+        "options": {}
+      },
+      "id": "ffb72ad5-43b6-499e-8c5d-7cab15db73f8",
+      "name": "Create Gmail Filter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [1680, 96]
+    }
+  ],
+  "connections": {
+    "Daily 9AM Trigger": { "main": [[{ "node": "Get Activity Log Rows", "type": "main", "index": 0 }]] },
+    "Get Activity Log Rows": { "main": [[{ "node": "Find Unsubscribe Candidates", "type": "main", "index": 0 }]] },
+    "Find Unsubscribe Candidates": { "main": [[{ "node": "Extract Sender Email", "type": "main", "index": 0 }]] },
+    "Extract Sender Email": { "main": [[{ "node": "Ask To Trash", "type": "main", "index": 0 }]] },
+    "Check Approval": { "main": [[{ "node": "Create Gmail Filter", "type": "main", "index": 0 }], [{ "node": "Mark Sender As Asked", "type": "main", "index": 0 }]] },
+    "Create Gmail Filter": { "main": [[{ "node": "Mark Sender As Asked", "type": "main", "index": 0 }]] },
+    "Ask To Trash": { "main": [[{ "node": "Check Approval", "type": "main", "index": 0 }]] }
+  }
+}

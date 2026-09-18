@@ -16,7 +16,7 @@ This was my first agent build, before SmartInboxCleanup. It's a different proble
 
 Filter first: before the AI ever sees an email, a rule check skips anything already handled, already replied, or an obvious unsubscribe-pattern email, so the agent isn't burning tokens re-deciding what's already settled. Decision matrix: the agent classifies every email into one of four lanes, urgent/high-value (label + Slack ping, no auto-reply, that stays a human decision), meeting/calendar updates (Slack ping only), general business (checked against a Google Doc knowledge base), or clutter (silently archived). Archive-last rule: removing the inbox label is always the final action, so nothing gets archived before it's actually been handled.
 
-This version worked, but it was a single do-everything agent carrying one long, rigid prompt.
+This version worked, but it was a single do-everything agent carrying one long, rigid prompt. [Workflow export →](SmartInboxTriage-v1-workflow.json) (the prompt itself is redacted, that's the part that took the actual work)
 
 ## Version 2
 
@@ -35,6 +35,8 @@ Version 2 splits the single agent into a small set of purpose-built n8n workflow
 - **Daily Summary workflow:** a separate end-of-day digest so lower-priority items (labeled but not escalated in real time) still reach me, just without interrupting my day.
 - **Trash check workflow:** a smarter alternative to unsubscribe links, which aren't always reliable. When the agent has silently archived 5 or more emails from the same sender within 14 days, the kind it already treats as clutter, it asks me whether I want that sender out of my inbox entirely. If I say yes, every future email from them gets marked and routed straight to trash on arrival, and it won't ask about the same sender twice.
 - **Error workflow:** a dedicated monitoring workflow that flags infrastructure failures (like a dependency going down) on its own, separate from the agent's own reasoning.
+
+**Workflow exports** (prompts redacted, credentials stripped): [SmartInboxTriage main agent](SmartInboxTriage-v2-workflow.json) · [Knowledge base insert (RAG)](Triage-Knowledge-Base-Insert-workflow.json) · [Daily Summary](Triage-Daily-Summary-workflow.json) · [Trash Check](Triage-Trash-Check-workflow.json)
 
 ## See it handle real email
 
