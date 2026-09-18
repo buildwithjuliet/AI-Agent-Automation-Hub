@@ -33,7 +33,7 @@ Version 2 splits the single agent into a small set of purpose-built n8n workflow
 - **Escalation:** Telegram, replacing Slack, with an inline approval step. When something needs a human decision, I get the summary on Telegram and a single yes or no sends my Calendly link (or hands me the thread to reply to personally on a no).
 - **Thread memory via labels:** an "awaiting response" label lets the agent recognize when someone replies to a conversation it already started, instead of treating every reply as a brand new email.
 - **Daily Summary workflow:** a separate end-of-day digest so lower-priority items (labeled but not escalated in real time) still reach me, just without interrupting my day.
-- **Trash check workflow:** a separate workflow that keeps the inbox's trash in check as part of the same system.
+- **Trash check workflow:** a smarter alternative to unsubscribe links, which aren't always reliable. When the agent has silently archived 5 or more emails from the same sender within 14 days, the kind it already treats as clutter, it asks me whether I want that sender out of my inbox entirely. If I say yes, every future email from them gets marked and routed straight to trash on arrival, and it won't ask about the same sender twice.
 - **Error workflow:** a dedicated monitoring workflow that flags infrastructure failures (like a dependency going down) on its own, separate from the agent's own reasoning.
 
 ## See it handle real email
