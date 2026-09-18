@@ -12,14 +12,14 @@ This isn't a bug in the triage logic itself, the message that did trigger was ha
 
 ## Failure and resilience: RAG retrieval broke, the agent handled it correctly anyway
 
-During a live test (a pricing question, covered in the case study as Scenario 5), the knowledge base lookup failed outright. The exact error, straight from Cohere's API:
+During a live test (a pricing question, covered in the case study as Scenario 5b), the knowledge base lookup failed outright. The exact error, straight from Cohere's API:
 
 ```
 NotFoundError, Status code: 404
 "model 'embed-english-v2.0' was removed on April 4, 2026."
 ```
 
-The embeddings model this system was built on got deprecated and pulled from Cohere's platform. Since both inserting into and searching the knowledge base depend on that same model, the whole retrieval side is currently non-functional, not a partial degradation.
+The embeddings model this system was built on got deprecated and pulled from Cohere's platform. Since both inserting into and searching the knowledge base depend on that same model, the whole retrieval side was non-functional, not a partial degradation.
 
 What matters more: the agent didn't break. It hit the tool error, treated it the same as a genuine "not found in the knowledge base" case exactly as designed, sent a professional holding reply, labeled it, and escalated to me on Telegram for a decision. No crash, no silent failure, no email left unhandled. A separate error workflow on this project also flagged the deprecation independently, so I already knew about it before the Telegram message arrived. The human-in-the-loop fallback caught an infrastructure failure it was never specifically built to catch, because it was built around "if the answer isn't confidently known, don't guess, ask," and an API error is just another form of not knowing.
 
