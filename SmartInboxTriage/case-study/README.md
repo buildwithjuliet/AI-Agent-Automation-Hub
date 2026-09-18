@@ -27,7 +27,7 @@ It still tried to escalate the case to Telegram afterward, but Telegram couldn't
 
 **Expectations:** True Urgent category, not time-sensitive. Labeled "Urgent for Julie" only, no Telegram, no reply, no archive, just sits labeled for me to review whenever.
 
-**Results:** A collaboration idea came in with no time pressure attached. The agent labeled it "Urgent for Julie" and did not ping me on Telegram or send a reply, that part matched. Where it deviated: the expectation was that it stays labeled and unarchived, sitting in the inbox for me to review, but the agent archived it as well. That label still feeds the end-of-day digest I get before I even open the inbox myself, so nothing was lost, but it's an honest, confirmed deviation from what was expected, not a silent success.
+**Results:** A collaboration idea came in with no time pressure attached. The agent labeled it "Urgent for Julie" and did not ping me on Telegram or send a reply, that part matched. Where it deviated: the expectation was that the thread stays in the inbox, just labeled. Instead the agent also archived it. In Gmail, a labeled email stays fully visible under its label regardless of archive state, so nothing was hidden or hard to find, but it's still a confirmed deviation from what was expected, not a silent success.
 
 [Watch the full run](https://youtu.be/AiPLljCuElo)
 
