@@ -40,6 +40,6 @@ Version 2 splits the single agent into a small set of purpose-built n8n workflow
 
 I ran five live test scenarios against this system, real email, my own two test accounts talking to each other, including one where a real third-party API broke mid-run. Here's how it actually behaved:
 
-![Five live test scenarios](scenario-teaser-card.svg)
+![Five live test scenarios](scenarios-card.svg)
 
 [**Read the full case study, with videos and screenshots →**](case-study/README.md)
