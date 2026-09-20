@@ -1,0 +1,126 @@
+{
+  "name": "POS Payment Confirmation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "your-unique-path-per-merchant",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b626bac3-afb8-44d2-a657-5454e50f930a",
+      "name": "Transaction received",
+      "webhookId": "28bfa7c7-df63-47f4-bb8a-6d81522e4c86"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n// The secret Moniepoint shows you once when you create the webhook subscription. One per merchant.\nconst SECRET = 'YOUR_SUBSCRIPTION_SECRET';\n\nconst item = $input.first().json;\nconst h = item.headers || {};\nconst id = h['moniepoint-webhook-id'];\nconst ts = h['moniepoint-webhook-timestamp'];\nconst sig = h['moniepoint-webhook-signature'];\nconst body = JSON.stringify(item.body);\n\nconst expected = crypto\n  .createHmac('sha256', SECRET)\n  .update(`${id}__${ts}__${body}`)\n  .digest('base64');\n\nreturn [{ json: { valid: expected === sig, id, ts, receivedSig: sig, expectedSig: expected, body: item.body } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "9458d925-4864-4d0a-a654-8b2beddad979",
+      "name": "Format Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Settings for this client\nconst SECURITY_WORD = '';\n\nconst d = $input.first().json;\nif (!d.valid) throw new Error('Signature check failed: message did not come from Moniepoint');\n\nconst ev = d.body || {};\nconst t = ev.data || {};\nconst type = ev.eventType;\n\nfunction naira(kobo) {\n  const [whole, frac] = (Number(kobo) / 100).toFixed(2).split('.');\n  return whole.replace(/\\B(?=(\\d{3})+(?!\\d))/g, ',') + (frac === '00' ? '' : '.' + frac);\n}\n\nfunction clock(s) {\n  const m = String(s || '').match(/(\\d{2}):(\\d{2})/);\n  if (!m) return '';\n  let h = Number(m[1]);\n  const ap = h >= 12 ? 'PM' : 'AM';\n  h = h % 12 || 12;\n  return h + ':' + m[2] + ' ' + ap;\n}\n\nfunction finish(lines) {\n  if (SECURITY_WORD) lines.push('Security word: ' + SECURITY_WORD);\n  lines.push('', '_~YourBrand_');\n  return [{ json: { text: lines.join('\\n') } }];\n}\n\nif (type === 'V1_POS_TRANSFER_TRANSACTION') {\n  // Only completed and approved transactions ever produce an alert\n  if (t.transactionStatus !== 'COMPLETED' || t.responseMessage !== 'APPROVED') return [];\n  let meta = {};\n  try { meta = JSON.parse(t.metaData || '{}'); } catch (e) {}\n  let name = String(meta.customerName || 'a customer').trim();\n  if (name.includes(',')) {\n    const p = name.split(',').map(s => s.trim());\n    name = p.slice(1).join(' ') + ' ' + p[0];\n  }\n  name = name.toLowerCase().replace(/\\b\\w/g, c => c.toUpperCase());\n  const ref = String(t.transactionReference || '').split('|').pop().slice(-6);\n  const lines = ['✅ *Payment confirmed*', '', '*₦' + naira(t.amount) + '* from *' + name + '* has landed in your account.'];\n  const when = clock(t.transactionTime);\n  if (when) lines.push('Time: ' + when);\n  lines.push('Ref: ' + ref);\n  return finish(lines);\n}\n\nif (type === 'V1_POS_PURCHASE_TRANSACTION') {\n  if (t.transactionStatus !== 'SUCCESSFUL' || t.responseCode !== '00') return [];\n  const rrn = String(t.retrievalReferenceNumber || '').replace(/^0+/, '');\n  const lines = ['✅ *Card payment approved*', '', '*₦' + naira(t.amount) + '* was approved on your terminal.'];\n  const when = clock(t.transactionTime);\n  if (when) lines.push('Time: ' + when);\n  if (rrn) lines.push('Ref: ' + rrn);\n  return finish(lines);\n}\n\n// Withdrawals: assumed to look like a card purchase. Anything that does not match falls through to the raw capture below.\nif (type === 'V1_POS_WITHDRAWAL_TRANSACTION' && t.transactionStatus === 'SUCCESSFUL' && t.responseCode === '00') {\n  const rrn = String(t.retrievalReferenceNumber || '').replace(/^0+/, '');\n  const lines = ['✅ *Card withdrawal approved*', '', '*₦' + naira(t.amount) + '* withdrawal was approved on your terminal.'];\n  const when = clock(t.transactionTime);\n  if (when) lines.push('Time: ' + when);\n  if (rrn) lines.push('Ref: ' + rrn);\n  return finish(lines);\n}\n\n// Any other event type: send the raw event so we can learn its shape\nconst raw = 'Capture. Event: ' + type + '. Received: ' + JSON.stringify(ev).slice(0, 900);\nreturn [{ json: { text: raw } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "204d7d52-f26b-4f51-9778-499c661b395d",
+      "name": "Compose message"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://YOUR_EVOLUTION_API_HOST/message/sendText/YOUR_INSTANCE_NAME",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apiKey",
+              "value": "YOUR_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "234XXXXXXXXXX"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.text }}"
+            },
+            {
+              "name": "delay",
+              "value": "={{ 10000 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        672,
+        0
+      ],
+      "id": "56a739fd-a062-459b-a62b-8911829dc85c",
+      "name": "Whatsapp notification"
+    }
+  ],
+  "connections": {
+    "Transaction received": {
+      "main": [
+        [
+          {
+            "node": "Format Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Data": {
+      "main": [
+        [
+          {
+            "node": "Compose message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose message": {
+      "main": [
+        [
+          {
+            "node": "Whatsapp notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

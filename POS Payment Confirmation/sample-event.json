@@ -1,0 +1,28 @@
+{
+  "eventId": "00000000-0000-4000-8000-000000000001",
+  "eventType": "V1_POS_TRANSFER_TRANSACTION",
+  "subject": {
+    "domain": "CHANNELS",
+    "resource": "business",
+    "resourceId": "00000000"
+  },
+  "data": {
+    "businessId": 0,
+    "businessOwnerId": 0,
+    "terminalSerial": "TERMINAL_SERIAL",
+    "amount": 10000,
+    "transactionReference": "AP_TRSF|0000000000|0000000000000000000",
+    "merchantReference": null,
+    "retrievalReferenceNumber": "",
+    "transactionTime": "2026/01/01 12:00:00",
+    "transactionType": "POS_TRANSFER",
+    "transactionStatus": "COMPLETED",
+    "responseCode": "20000",
+    "responseMessage": "APPROVED",
+    "customFields": {},
+    "metaData": "{\"customerPhone\":null,\"narration\":\"Transfer from JANE DOE\",\"customerAccountNumber\":\"******0000\",\"customerBank\":\"Example Bank\",\"customerName\":\"DOE, JANE\"}",
+    "narration": "Transfer from JANE DOE"
+  },
+  "createdAt": "2026-01-01T12:00:00.000000000",
+  "_note": "Made-up values. Amount is in kobo, so 10000 means 100 naira. The three moniepoint-webhook headers (id, timestamp, signature) arrive with the request and are used to verify it."
+}
