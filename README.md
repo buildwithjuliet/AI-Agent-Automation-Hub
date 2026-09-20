@@ -4,7 +4,7 @@
 
 # buildwithjuliet
 
-I build AI agents and automation that handle the repetitive admin and operational work founders keep paying people to do. Inbox. Orders & CRM. Content. Outreach.
+I build AI agents and automation that handle the repetitive admin and operational work founders keep paying people to do. Inbox. Orders & CRM. Content. Custom workflows.
 
 ## Why I build these
 

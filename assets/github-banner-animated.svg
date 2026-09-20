@@ -76,8 +76,8 @@
       <rect x="498" y="206" width="102" height="32" rx="16" fill="none" stroke="#e08a4f" stroke-opacity="0.45"/>
       <text x="549" y="227" text-anchor="middle">Content</text>
 
-      <rect x="612" y="206" width="118" height="32" rx="16" fill="none" stroke="#e08a4f" stroke-opacity="0.45"/>
-      <text x="671" y="227" text-anchor="middle">Outreach</text>
+      <rect x="612" y="206" width="172" height="32" rx="16" fill="none" stroke="#e08a4f" stroke-opacity="0.45"/>
+      <text x="698" y="227" text-anchor="middle">Custom workflows</text>
     </g>
   </g>
 </svg>
