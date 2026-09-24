@@ -33,7 +33,7 @@ It still tried to escalate the case to Telegram afterward, but Telegram couldn't
 
 ## Scenario 4: "are you free this week?", in two parts
 
-**Expectations:** First message, the agent asks what it's about, labels the thread "awaiting response," archives it, no Telegram yet. My reply with the real reason: label clears, Telegram yes/no fires with the reason, then Calendly or silence, same as Scenario 1 & 3 from there.
+**Expectations:** First message, the agent asks what it's about, labels the thread "awaiting response," archives it, no Telegram yet. My reply with the real reason: label clears, Telegram yes/no fires with the reason, then a booking link or silence, same as Scenario 1 & 3 from there.
 
 **Results:** John's opening email was just "are you free this week?", nothing else. The agent replied asking him what he actually wanted to talk about, and labeled the thread "awaiting response." One thing didn't go cleanly here: archiving the original message failed with a Gmail API error (visible in the video), a known, occasional quirk, not something that affected the reply or the labeling. John replied in the same video with his real reason, that he wants to automate his processes and doesn't know where to start. His reply landed on the same thread, still carrying the label, so the agent recognized it had unfinished business there, summarized what John wanted, and sent it to me on Telegram. I clicked yes, and my booking link went out to him. Matched expectations, aside from the archive error.
 
