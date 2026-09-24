@@ -21,7 +21,7 @@
     <rect x="40" y="102" width="1120" height="60" rx="8" fill="#e08a4f" fill-opacity="0.06"/>
     <text x="56" y="134" font-size="16" font-weight="800" fill="#f7efe2">1 &amp; 3 &#183; Partnership request</text>
     <text x="430" y="134" font-size="14" font-weight="500" fill="#d9c6ae">Escalate first, no auto-reply</text>
-    <text x="800" y="134" font-size="14" font-weight="700" fill="#8fbf7a">Matched, Calendly sent on yes</text>
+    <text x="800" y="134" font-size="14" font-weight="700" fill="#8fbf7a">Matched, booking link sent on yes</text>
 
     <rect x="40" y="174" width="1120" height="60" rx="8" fill="#ffffff" fill-opacity="0.02"/>
     <text x="56" y="206" font-size="16" font-weight="800" fill="#f7efe2">2 &#183; Collab idea, not urgent</text>

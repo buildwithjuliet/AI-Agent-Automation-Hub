@@ -16,9 +16,9 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "[redacted on purpose. this is the part that actually took work. want it? book a discovery call and I'll walk you through it]",
+        "text": "[redacted on purpose. this is the part that actually took work. want it? email kosy@buildwithjuliet.com and I'll walk you through it]",
         "options": {
-          "systemMessage": "[redacted on purpose. this is the part that actually took work. want it? book a discovery call and I'll walk you through it]",
+          "systemMessage": "[redacted on purpose. this is the part that actually took work. want it? email kosy@buildwithjuliet.com and I'll walk you through it]",
           "maxIterations": 15
         }
       },

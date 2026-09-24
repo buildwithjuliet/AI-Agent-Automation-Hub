@@ -33,7 +33,7 @@ In the two-part meeting flow (ask for a reason, then act once it arrives), the l
 
 ## Final archive step failed on a live run, cause not fully identified
 
-In one execution, every step succeeded, reason captured, Telegram approval, Calendly reply sent, activity logged, except the very last one: removing the INBOX label to archive the thread. Gmail's API rejected it directly: `"Bad request - please check your parameters (item 0)"`. Same node, same message ID, same call structure as an earlier successful label removal two steps prior in the same execution. Traced the full tool call sequence and couldn't isolate the exact cause with confidence.
+In one execution, every step succeeded, reason captured, Telegram approval, booking reply sent, activity logged, except the very last one: removing the INBOX label to archive the thread. Gmail's API rejected it directly: `"Bad request - please check your parameters (item 0)"`. Same node, same message ID, same call structure as an earlier successful label removal two steps prior in the same execution. Traced the full tool call sequence and couldn't isolate the exact cause with confidence.
 
 Seen again during the Scenario 4 test in the case study, same class of error, still non-blocking, reinforces this is a real recurring quirk rather than a one-off fluke.
 

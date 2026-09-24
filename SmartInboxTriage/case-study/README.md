@@ -17,9 +17,9 @@ It still tried to escalate the case to Telegram afterward, but Telegram couldn't
 
 ## Scenario 1 & 3: "quick one before end of day" / "can we hop on a call?"
 
-**Expectations:** Content asks for a call, so it should land as a Meeting again, reason already given. No reply and no label upfront, straight to a Telegram yes/no. Yes sends the Calendly link and archives. No archives with no reply sent.
+**Expectations:** Content asks for a call, so it should land as a Meeting again, reason already given. No reply and no label upfront, straight to a Telegram yes/no. Yes sends the booking link and archives. No archives with no reply sent.
 
-**Results:** A time-sensitive partnership request came in. Because it was urgent, the agent didn't act on its own, it escalated straight to me on Telegram and waited for a decision. I clicked yes, and it sent my Calendly link to the person, it read as a warm response, not a robotic one. If I'd clicked no instead, that's my signal that I want to write a personal reply myself, the agent hands me the thread link in the same Telegram message either way. Matched expectations.
+**Results:** A time-sensitive partnership request came in. Because it was urgent, the agent didn't act on its own, it escalated straight to me on Telegram and waited for a decision. I clicked yes, and it sent my booking link to the person, it read as a warm response, not a robotic one. If I'd clicked no instead, that's my signal that I want to write a personal reply myself, the agent hands me the thread link in the same Telegram message either way. Matched expectations.
 
 [Watch the full run](https://youtu.be/keIgmvQo9gI)
 
@@ -35,7 +35,7 @@ It still tried to escalate the case to Telegram afterward, but Telegram couldn't
 
 **Expectations:** First message, the agent asks what it's about, labels the thread "awaiting response," archives it, no Telegram yet. My reply with the real reason: label clears, Telegram yes/no fires with the reason, then Calendly or silence, same as Scenario 1 & 3 from there.
 
-**Results:** John's opening email was just "are you free this week?", nothing else. The agent replied asking him what he actually wanted to talk about, and labeled the thread "awaiting response." One thing didn't go cleanly here: archiving the original message failed with a Gmail API error (visible in the video), a known, occasional quirk, not something that affected the reply or the labeling. John replied in the same video with his real reason, that he wants to automate his processes and doesn't know where to start. His reply landed on the same thread, still carrying the label, so the agent recognized it had unfinished business there, summarized what John wanted, and sent it to me on Telegram. I clicked yes, and my Calendly link went out to him. Matched expectations, aside from the archive error.
+**Results:** John's opening email was just "are you free this week?", nothing else. The agent replied asking him what he actually wanted to talk about, and labeled the thread "awaiting response." One thing didn't go cleanly here: archiving the original message failed with a Gmail API error (visible in the video), a known, occasional quirk, not something that affected the reply or the labeling. John replied in the same video with his real reason, that he wants to automate his processes and doesn't know where to start. His reply landed on the same thread, still carrying the label, so the agent recognized it had unfinished business there, summarized what John wanted, and sent it to me on Telegram. I clicked yes, and my booking link went out to him. Matched expectations, aside from the archive error.
 
 [Watch the full run](https://youtu.be/GqpRyrW0o68)
 
