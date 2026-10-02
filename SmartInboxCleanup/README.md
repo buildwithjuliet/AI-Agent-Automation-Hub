@@ -1,3 +1,57 @@
+# SmartInboxCleanup: the hq version (latest)
+
+[![Watch the hq version demo](https://img.youtube.com/vi/8ziZ-N75uu0/0.jpg)](https://youtu.be/8ziZ-N75uu0)
+
+Watch the walkthrough: https://youtu.be/8ziZ-N75uu0
+
+## The problem
+
+The first versions worked, but I was still running the business around them by hand. Every new customer meant adding them as a Google test user myself, a Tally form to collect preferences, a Notion page to count users, and a separate payment link. If I was asleep, a customer waited. And I had no clear picture of how many people had connected, or what happened to their access afterwards.
+
+## What I changed
+
+I moved the whole customer journey into my own backend (called hq), and kept n8n for what it does best: the heavy lifting on the inbox.
+
+* **Pay first.** A Paystack checkout on my own page (N33,000, or $25 charged in naira at the day's rate). No more chasing payments.
+* **Sign in with Google through hq.** hq checks the permission the customer actually granted. If they untick the Gmail box on the Google screen, it is caught right there and they get an email showing how to fix it, instead of a run that fails halfway.
+* **A preference form that I own.** No Tally, no Notion.
+* **Live progress.** The customer sees processed, trashed, archived and remaining counts update while the cleanup runs.
+* **Tokens are wiped.** The Google refresh token is stored scrambled (AES), and wiped and revoked at Google the moment the cleanup finishes, or after 7 days at most. n8n never holds my Google secret: it asks hq for a one hour token each batch.
+* **A 100 user cap.** While my Google app is in testing, hq counts unique Google accounts (stored as hashes), alerts me at 80, 90 and 100 percent, and stops taking payments when full.
+* **Free links.** I can gift a cleanup. The link works once, and its access is revoked after use.
+* **Stage 2 prefilter.** Before any AI is used, plain rules run first: keep words win, purchases are left alone, known junk words are trashed, and the Promotions, Social and Forums tabs are trashed. The AI only sees what is left, so a run costs less and is faster. Batches are now 25.
+* **A new error workflow.** On a failure it asks hq to retry (up to 3 times) for the kind of problem that heals itself, and sends me a Slack alert for the kind that needs me.
+
+## Real runs
+
+* An inbox of 113 emails: 107 trashed, 6 kept.
+* An inbox of 101 emails: 79 trashed, 22 archived.
+
+Both ran end to end through the real payment, the real Google sign in and the new progress screen.
+
+## The three workflows
+
+| File | What it does |
+| --- | --- |
+| [smartinboxcleanup-hq.json](hq-version/smartinboxcleanup-hq.json) | The main cleanup. Starts from hq, gets a fresh token per batch, prefilters, classifies, trashes and archives, and reports progress back. |
+| [hq-smartinbox-events.json](hq-version/hq-smartinbox-events.json) | Sends the customer emails (through Brevo) when hq reports an event, such as a finished cleanup or a missing Gmail permission. |
+| [smartinboxcleaner-error-hq.json](hq-version/smartinboxcleaner-error-hq.json) | Self healing error handling: retry through hq, or alert me. |
+
+Credentials are replaced with `REPLACE_WITH_YOUR_CREDENTIAL_ID`, so attach your own in n8n. These workflows talk to my hq backend (`/api/sic/...`), so they are published here to show the design, not as a drop in install.
+
+![SmartInboxCleanup hq version](hq-version/smartinboxcleanup-version-4.png)
+
+![hq smartinbox events](hq-version/smartinboxcleanup-events.png)
+
+![hq error workflow](hq-version/smartinboxcleanup-error-workflow-version-3.png)
+
+## Honest takeaways
+
+* Moving the product into my own system removed most of my manual work and made the customer side clearer. The cost is that I now own payments, tokens and privacy, so I treat those seriously: wipe after use, cap users, never keep a long lived secret in n8n.
+* A prefilter before the AI is cheaper and more predictable than asking the AI about everything.
+* Catching a missing permission at sign in is far better than finding out mid run.
+
+---
 # Weekly Inbox Cleaner
 
 A one-time, powerful inbox reset tool designed to clear massive email backlogs instantly.

@@ -1,0 +1,673 @@
+{
+  "name": "SmartInboxCleaner Error (hq)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "ef623e7f-5056-4afa-b907-edeb1de10182",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "s1",
+              "leftValue": "={{ $json.workflow.name }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "SmartInboxCleanup (hq)"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "1b92a4c1-7ab7-4e04-9d6d-9dcd75c60b97",
+      "name": "Is it the SmartInboxCleanup (hq) workflow?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -160,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.execution.error.message }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "rightValue": "EAI_AGAIN"
+            },
+            {
+              "id": "c2",
+              "leftValue": "={{ $json.execution.error.message }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "rightValue": "ETIMEDOUT"
+            },
+            {
+              "id": "c3",
+              "leftValue": "={{ $json.execution.error.message }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "rightValue": "ECONNRESET"
+            },
+            {
+              "id": "c4",
+              "leftValue": "={{ $json.execution.error.message }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "rightValue": "rate limit"
+            },
+            {
+              "id": "c5",
+              "leftValue": "={{ $json.execution.error.message }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "rightValue": "429"
+            },
+            {
+              "id": "c6",
+              "leftValue": "={{ $json.execution.error.message }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "rightValue": "DNS"
+            },
+            {
+              "id": "c7",
+              "leftValue": "={{ $json.execution.error.httpCode }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "429"
+            },
+            {
+              "id": "c8",
+              "leftValue": "={{ $json.execution.error.message }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "rightValue": "too many requests"
+            },
+            {
+              "id": "c9",
+              "leftValue": "={{ $json.execution.error.message }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "rightValue": "timed out"
+            },
+            {
+              "id": "c10",
+              "leftValue": "={{ $json.execution.error.message }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "rightValue": "502"
+            },
+            {
+              "id": "c11",
+              "leftValue": "={{ $json.execution.error.message }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "rightValue": "503"
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "2db0a2db-2162-4cb3-a03e-4d74dbd87fd1",
+      "name": "Is it a network or rate limit error?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        80,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hq.buildwithjuliet.com/api/sic/retry",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ execution_id: Number($json.execution.id) }) }}",
+        "options": {}
+      },
+      "id": "2aab74fd-c167-46a0-9913-3e09d6416656",
+      "name": "Ask hq which job it was",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        320,
+        112
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "hq webhook secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f1",
+              "leftValue": "={{ $json.found }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "rightValue": true
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "89151334-a7ad-4a17-bfa4-372f2fe813ae",
+      "name": "Does hq know this job?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        560,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "r1",
+              "leftValue": "={{ $json.can_retry }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "rightValue": true
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "0868ee86-5307-41e8-afe1-2697bf9c9895",
+      "name": "May it try again?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        800,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "sendHTML": true,
+        "subject": "Quick update on your inbox cleanup",
+        "htmlContent": "=<p>Hi {{ $json.name }},</p>\n<p>Quick status update on your inbox cleanup: we are still working through it, and we are continuing now.</p>\n<p>You will get your completion email once everything is fully done.</p>\n<p>Questions in the meantime? support@buildwithjuliet.com</p>\n<p>Best,<br>buildwithjuliet</p>",
+        "sender": "kosy@buildwithjuliet.com",
+        "receipients": "={{ $json.contact_email || $json.gmail }}",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "id": "332eb445-dd92-4c31-a360-5329dd457998",
+      "name": "Email: quick update, we are continuing",
+      "type": "n8n-nodes-base.sendInBlue",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -128
+      ],
+      "credentials": {
+        "sendInBlueApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Brevo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "mRF1LCqEOy5ErKPy",
+          "cachedResultName": "SmartInboxCleanup (hq)"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_id": "={{ $(\"Ask hq which job it was\").item.json.job_id }}",
+            "name": "={{ $(\"Ask hq which job it was\").item.json.name }}",
+            "contact_email": "={{ $(\"Ask hq which job it was\").item.json.contact_email }}",
+            "gmail": "={{ $(\"Ask hq which job it was\").item.json.gmail }}",
+            "keep_keywords": "={{ $(\"Ask hq which job it was\").item.json.keep_keywords }}",
+            "trash_keywords": "={{ $(\"Ask hq which job it was\").item.json.trash_keywords }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contact_email",
+              "displayName": "contact_email",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "gmail",
+              "displayName": "gmail",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "keep_keywords",
+              "displayName": "keep_keywords",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "trash_keywords",
+              "displayName": "trash_keywords",
+              "type": "string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "8a9f3791-4c65-47e8-9757-596f2305c2ac",
+      "name": "Start the cleanup again",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1280,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d1",
+              "leftValue": "={{ $json.done }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "rightValue": true
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "487eda4b-39aa-4b3a-9143-669605ce0d80",
+      "name": "Was it already done?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1040,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "value": "U0A8WD5V1D0",
+          "mode": "list",
+          "cachedResultName": "chukwukaelojuliet"
+        },
+        "text": "=<@U0A8WD5V1D0> ℹ️ SmartInboxCleanup retry check ran for {{ $json.contact_email || \"a customer\" }}, but their cleanup was already marked Done. No action needed, this was a stray error event after completion.",
+        "otherOptions": {}
+      },
+      "id": "f29a706e-c871-4600-8419-ab3de1495a51",
+      "name": "Slack: already done, no action",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        1280,
+        64
+      ],
+      "webhookId": "5d3dbad1-e7fb-45af-af82-4364f429a317",
+      "credentials": {
+        "slackApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hq.buildwithjuliet.com/api/sic/failed",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job_id: $json.job_id, reason: \"Retried \" + $json.retry_count + \" times and it still fails. Error: \" + $(\"Error Trigger\").first().json.execution.error.message }) }}",
+        "options": {}
+      },
+      "id": "4c26853f-399d-4f42-809f-f09ffd21bd8a",
+      "name": "Tell hq: it failed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1280,
+        288
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "hq webhook secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "value": "U0A8WD5V1D0",
+          "mode": "list",
+          "cachedResultName": "chukwukaelojuliet"
+        },
+        "text": "=<@U0A8WD5V1D0> ⚠️ SmartInboxCleanup retried 3 times and is still failing for {{ $(\"Ask hq which job it was\").item.json.contact_email || \"a customer\" }}. This one needs your manual attention now, auto-retry has stopped. Their access is kept in hq so you can restart it.",
+        "otherOptions": {}
+      },
+      "id": "db19c294-0c0a-4f96-9d5f-4e2707517ff3",
+      "name": "Slack: retried 3 times, needs you",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        1520,
+        288
+      ],
+      "webhookId": "5fa07d6f-daa0-453a-aaa0-9e415458ff0d",
+      "credentials": {
+        "slackApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "value": "U0A8WD5V1D0",
+          "mode": "list",
+          "cachedResultName": "chukwukaelojuliet"
+        },
+        "text": "=<@U0A8WD5V1D0> ⚠️ Workflow Error Detected  Workflow Name: {{ $json.workflow.name }} Failed at Node: {{ $json.execution.lastNodeExecuted }} Error Message:  {{ $json.execution.error.message }} Link to execution: {{ $json.execution.url }}",
+        "otherOptions": {}
+      },
+      "id": "d45620a9-bd30-4c06-b577-f89e2d5f7053",
+      "name": "Slack: workflow error",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        208,
+        560
+      ],
+      "webhookId": "aa9b199c-e161-4a57-af6b-74b795402814",
+      "credentials": {
+        "slackApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is it the SmartInboxCleanup (hq) workflow?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is it the SmartInboxCleanup (hq) workflow?": {
+      "main": [
+        [
+          {
+            "node": "Is it a network or rate limit error?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack: workflow error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is it a network or rate limit error?": {
+      "main": [
+        [
+          {
+            "node": "Ask hq which job it was",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack: workflow error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask hq which job it was": {
+      "main": [
+        [
+          {
+            "node": "Does hq know this job?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Does hq know this job?": {
+      "main": [
+        [
+          {
+            "node": "May it try again?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack: workflow error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "May it try again?": {
+      "main": [
+        [
+          {
+            "node": "Email: quick update, we are continuing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Was it already done?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email: quick update, we are continuing": {
+      "main": [
+        [
+          {
+            "node": "Start the cleanup again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Was it already done?": {
+      "main": [
+        [
+          {
+            "node": "Slack: already done, no action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tell hq: it failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tell hq: it failed": {
+      "main": [
+        [
+          {
+            "node": "Slack: retried 3 times, needs you",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "8bcc220f-af49-4503-b516-2b07fb4da480",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "edf8a10cafd42d00d415f6605c15d16e5837014ff7155fd8dae524bc9fba18ce"
+  },
+  "nodeGroups": [],
+  "id": "E8QdNWWPez3ic93f",
+  "tags": []
+}

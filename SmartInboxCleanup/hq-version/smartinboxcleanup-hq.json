@@ -1,0 +1,1044 @@
+{
+  "name": "SmartInboxCleanup (hq)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hq-smartinbox-start",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "id": "b7cc5607-f595-47da-80b3-f1f513d32c32",
+      "name": "hq starts a cleanup",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2608,
+        208
+      ],
+      "webhookId": "3d146d67-66cb-4127-9fd4-8f4634fb5237",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "hq webhook secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const i = $input.first().json;\nconst b = i.body || i;\nreturn [{ json: { job_id: Number(b.job_id), name: b.name || \"\", contact_email: b.contact_email || b.email || \"\", gmail: b.gmail || \"\", keep: b.keep_keywords || b.keepKeywords || \"\", trash: b.trash_keywords || b.trashKeywords || \"\" } }];"
+      },
+      "id": "cb4193ac-e014-41f5-8927-0776a9aa2d83",
+      "name": "Job",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2368,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "job_id"
+            },
+            {
+              "name": "name"
+            },
+            {
+              "name": "contact_email"
+            },
+            {
+              "name": "gmail"
+            },
+            {
+              "name": "keep_keywords"
+            },
+            {
+              "name": "trash_keywords"
+            }
+          ]
+        }
+      },
+      "id": "2e6c0f6b-f73b-470f-aedf-1d58a26dd768",
+      "name": "Retry from the error workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2608,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hq.buildwithjuliet.com/api/sic/started",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job_id: $json.job_id, execution_id: $execution.id }) }}",
+        "options": {}
+      },
+      "id": "29947615-6d23-4f89-b080-bab93c50899a",
+      "name": "Tell hq: started",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -2128,
+        320
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "hq webhook secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hq.buildwithjuliet.com/api/sic/token",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job_id: $(\"Job\").first().json.job_id }) }}",
+        "options": {}
+      },
+      "id": "04f0ae05-1cc9-42ce-88ef-bb59f75ecd4c",
+      "name": "Get access token",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1888,
+        320
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "hq webhook secret"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.access_token }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "34830272-bd74-409e-990c-e38e2e641459",
+      "name": "Did hq give access?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1648,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "maxResults",
+              "value": "500"
+            },
+            {
+              "name": "q",
+              "value": "in:inbox"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $(\"Get access token\").first().json.access_token }}"
+            }
+          ]
+        },
+        "options": {
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "pageToken",
+                    "value": "={{ $response.body.nextPageToken }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ !$response.body.nextPageToken }}",
+              "limitPagesFetched": true,
+              "maxRequests": 1000,
+              "requestInterval": 500
+            }
+          }
+        }
+      },
+      "id": "650668aa-3c70-4bc0-b846-acfb1447088e",
+      "name": "List the inbox",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1408,
+        208
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "messages",
+        "options": {}
+      },
+      "id": "3e9db005-776c-40b4-8aab-1b4a844b4529",
+      "name": "Unpack",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1168,
+        208
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hq.buildwithjuliet.com/api/sic/progress",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job_id: $(\"Job\").first().json.job_id, remaining: $(\"Unpack\").all().filter(function (i) { return i.json.id; }).length }) }}",
+        "options": {}
+      },
+      "id": "6edace37-671c-45a1-be6f-88c457336de5",
+      "name": "Tell hq: size of the inbox",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -928,
+        208
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "hq webhook secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.done }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "18f1e5c4-19d5-4d84-a725-c9dc660317b1",
+      "name": "Was the inbox already empty?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -688,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "sendHTML": true,
+        "subject": "Your inbox is clean",
+        "htmlContent": "=<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#1c130d;max-width:520px\"><p>Hi {{ $(\"Job\").first().json.name || \"there\" }},</p><p><b>Your inbox is clean.</b> I sorted <b>{{ $json.processed }}</b> emails: {{ $json.trashed }} trashed and {{ $json.archived }} kept and archived.</p><p>My access to your Gmail is now closed. You can check it any time at <a href=\"https://myaccount.google.com/permissions\" style=\"color:#b8642a\">myaccount.google.com/permissions</a>.</p><p>If this saved you some stress today, I would love to hear about it. It takes less than 2 minutes:</p><p style=\"margin:24px 0\"><a href=\"https://testimonial.to/smartinboxcleanup\" style=\"display:inline-block;background:#e6935a;color:#1c130d;padding:13px 26px;border-radius:999px;font-weight:bold;text-decoration:none\">Leave a quick review</a></p><p>For any issue, reach me at <a href=\"mailto:support@buildwithjuliet.com\" style=\"color:#b8642a\">support@buildwithjuliet.com</a></p><p>Thanks,<br>Juliet, SmartInboxCleanup<br><a href=\"https://smartinboxcleanup.buildwithjuliet.com\" style=\"color:#b8642a\">smartinboxcleanup.buildwithjuliet.com</a></p><p style=\"margin:10px 0 0\"><a href=\"https://smartinboxcleanup.buildwithjuliet.com\"><img src=\"https://hq.buildwithjuliet.com/logo.png\" alt=\"buildwithjuliet\" height=\"48\" style=\"height:48px;width:auto;border:0;display:block\"></a></p></div>",
+        "sender": "kosy@buildwithjuliet.com",
+        "receipients": "={{ $(\"Job\").first().json.contact_email || $(\"Job\").first().json.gmail }}",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "id": "a81abdc0-8cfe-48fb-9ae9-16f15b959d2e",
+      "name": "Email: your inbox just got a full reset",
+      "type": "n8n-nodes-base.sendInBlue",
+      "typeVersion": 1,
+      "position": [
+        304,
+        64
+      ],
+      "retryOnFail": true,
+      "credentials": {
+        "sendInBlueApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Brevo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $(\"Unpack\").all().filter(function (i) { return i.json.id; });"
+      },
+      "id": "c88c63ca-9463-4068-989d-056ca6a8c48a",
+      "name": "Emails to sort",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hq.buildwithjuliet.com/api/sic/complete",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job_id: $(\"Job\").first().json.job_id, found: $(\"Unpack\").all().filter(function (i) { return i.json.id; }).length }) }}",
+        "options": {}
+      },
+      "id": "8e43033f-9a51-4e94-a9c2-cf6a7a2037cc",
+      "name": "Tell hq: all done",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        48,
+        64
+      ],
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "hq webhook secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "id": "b6ae9ac1-1b9a-47a6-a600-45580fe2532a",
+      "name": "Pause 2 seconds",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        48,
+        320
+      ],
+      "webhookId": "91dd1182-4ae8-4d2e-9c91-adef96872922"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hq.buildwithjuliet.com/api/sic/token",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job_id: $(\"Job\").first().json.job_id }) }}",
+        "options": {}
+      },
+      "id": "053c3f87-c3d3-45fe-92c3-e6dea1743ad5",
+      "name": "Get a fresh token for this batch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        288,
+        320
+      ],
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "hq webhook secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const token = $input.first().json.access_token;\nreturn $(\"Pause 2 seconds\").all().map(function (i) { return { json: { id: i.json.id, threadId: i.json.threadId, access_token: token } }; });"
+      },
+      "id": "010eb4dd-f1ca-4627-a89e-a8e34fc2c143",
+      "name": "Attach token",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://gmail.googleapis.com/gmail/v1/users/me/messages/{{ $json.id }}?format=metadata&metadataHeaders=Subject&metadataHeaders=From",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 12,
+              "batchInterval": 3000
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "b73d8fe8-b453-4c52-aa0a-85e1e4776279",
+      "name": "Get message details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        768,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "id",
+              "type": "string",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "id": "2",
+              "name": "threadId",
+              "type": "string",
+              "value": "={{ $json.threadId }}"
+            },
+            {
+              "id": "3",
+              "name": "subject",
+              "type": "string",
+              "value": "={{ $json.payload.headers.find(function (h) { return h.name === \"Subject\"; })?.value || \"(no subject)\" }}"
+            },
+            {
+              "id": "4",
+              "name": "from",
+              "type": "string",
+              "value": "={{ $json.payload.headers.find(function (h) { return h.name === \"From\"; })?.value || \"(unknown sender)\" }}"
+            },
+            {
+              "id": "5",
+              "name": "snippet",
+              "type": "string",
+              "value": "={{ $json.snippet }}"
+            },
+            {
+              "id": "6",
+              "name": "labels",
+              "type": "string",
+              "value": "={{ ($json.labelIds || []).join(\",\") }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b8349cc6-174b-46f7-9f61-099063121fff",
+      "name": "Trim emails",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        928,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Please categorize this email:\n\nSubject: {{ $json.subject }}\n\nfrom: {{ $json.from }}\n\ncontent:{{ $json.snippet }} \n\nTHRASH_KEYWORDS:{{ $(\"Job\").first().json.trash }}\n\nKEEP_KEYWORDS: {{ $(\"Job\").first().json.keep }}\n\nOutput ONLY the word trash or archive\n\n",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a ruthless smartInboxcleanup agent. Your goal is Absolute Inbox Zero.  Decision Logic:  Trash: Categorize as trash if the email is a newsletter, promotional material, notification, social media update, from a no-reply sender, or mass-list formatted.  Archive: Only categorize as archive if it is a personal conversation or critical business/legal transaction.  Safety Logic: If you are unsure, default to trash. My goal is an empty inbox, and I would rather manually restore an accidentally trashed email than have my inbox cluttered with junk I never wanted to see.  Strict Categorization: Do not treat promotions, updates, or bulk emails as important under any circumstances. If the email is from a marketing platform, it is trash.  Exception: Treat an email as archive ONLY if the sender is a direct human contact (not a service, platform, or automated system). If an email is from an automated sender (e.g., info@, support@, noreply@) or displays marketing patterns, it is trash even if it mentions your name."
+            }
+          ]
+        },
+        "batching": {
+          "batchSize": 25,
+          "delayBetweenBatches": 1000
+        }
+      },
+      "id": "40c8f28a-e3c0-4415-8028-06c2d9f2268f",
+      "name": "Trash or archive?",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1360,
+        320
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 4.5"
+        },
+        "options": {}
+      },
+      "id": "bfcf669e-ec87-4e0e-b434-6e1e5c947a29",
+      "name": "Claude Haiku 4.5",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [
+        1296,
+        608
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "id",
+              "type": "string",
+              "value": "={{ $(\"Only the undecided\").all()[$itemIndex].json.id }}"
+            },
+            {
+              "id": "2",
+              "name": "threadId",
+              "type": "string",
+              "value": "={{ $(\"Only the undecided\").all()[$itemIndex].json.threadId }}"
+            },
+            {
+              "id": "3",
+              "name": "dummy",
+              "type": "boolean",
+              "value": "={{ $(\"Only the undecided\").all()[$itemIndex].json.dummy === true }}"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "fd1dbc31-47e3-4d6a-b665-b13c37d1da5b",
+      "name": "Keep the email id",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1680,
+        320
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const token = $(\"Attach token\").first().json.access_token;\nconst out = [];\nitems.forEach(function (item) {\n  if (item.json.dummy === true) return;\n  out.push({ json: { action: String(item.json.text || \"\").trim().toLowerCase() === \"archive\" ? \"archive\" : \"trash\", id: item.json.id, threadId: item.json.threadId, access_token: token } });\n});\n$(\"Prefilter\").all().forEach(function (i) {\n  const r = i.json.route;\n  if (r === \"archive\" || r === \"trash\") out.push({ json: { action: r, id: i.json.id, threadId: i.json.threadId, access_token: token } });\n});\nif (!out.length) out.push({ json: { action: \"skip\", id: \"none\", threadId: \"\", access_token: token } });\nreturn out;"
+      },
+      "id": "05a77a5c-bd43-4515-a7b0-1a5d108a5575",
+      "name": "Sort results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1904,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://gmail.googleapis.com/gmail/v1/users/me/messages/{{ $json.id }}/{{ $json.action === \"archive\" ? \"modify\" : \"trash\" }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.action === \"archive\" ? JSON.stringify({ removeLabelIds: [\"INBOX\"] }) : \"{}\" }}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 3,
+              "batchInterval": 1500
+            }
+          }
+        }
+      },
+      "id": "8cf60cd8-9514-4c49-95db-b368d16fd113",
+      "name": "Trash or archive the email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2112,
+        320
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hq.buildwithjuliet.com/api/sic/progress",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job_id: $(\"Job\").first().json.job_id, add_processed: $(\"Prefilter\").all().length, add_archived: $(\"Sort results\").all().filter(function (i) { return i.json.action === \"archive\"; }).length + $(\"Prefilter\").all().filter(function (i) { return i.json.route === \"leave\"; }).length, add_trashed: $(\"Sort results\").all().filter(function (i) { return i.json.action === \"trash\"; }).length }) }}",
+        "options": {}
+      },
+      "id": "8fbc1616-9f5b-4fd8-b09d-6c041047773d",
+      "name": "Tell hq: this batch is done",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2368,
+        320
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "hq webhook secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 25,
+        "options": {}
+      },
+      "id": "61b0ef75-9e0e-44eb-a9cb-e1361aa8820c",
+      "name": "Loop over 25 emails",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -208,
+        320
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "a654bdb4-ce87-48fa-81ab-9b7bb85599b7",
+      "name": "Stop: no Gmail access (hq has already told you and them)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -1408,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const job = $(\"Job\").first().json;\nconst words = function (s) { return String(s || \"\").toLowerCase().split(/[,\\n;]+/).map(function (w) { return w.trim(); }).filter(function (w) { return w.length > 1; }); };\nconst keep = words(job.keep), trash = words(job.trash);\nconst buy = [\"order confirmation\", \"your order\", \"order #\", \"receipt\", \"invoice\", \"payment received\", \"payment confirmation\", \"has shipped\", \"out for delivery\", \"booking confirmation\", \"reservation\", \"tracking number\", \"your purchase\", \"refund\"];\nreturn $input.all().map(function (item) {\n  const j = item.json;\n  const text = (String(j.subject) + \" \" + String(j.from) + \" \" + String(j.snippet)).toLowerCase();\n  const hit = function (list) { return list.some(function (w) { return text.indexOf(w) !== -1; }); };\n  let route = \"ai\";\n  if (hit(keep)) route = \"archive\";\n  else if (hit(buy)) route = \"leave\";\n  else if (hit(trash)) route = \"trash\";\n  else if (/CATEGORY_(PROMOTIONS|SOCIAL|FORUMS)/.test(String(j.labels || \"\"))) route = \"trash\";\n  return { json: Object.assign({}, j, { route: route }) };\n});"
+      },
+      "id": "74a988a4-2dc5-4c23-9414-8e471add1081",
+      "name": "Prefilter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const todo = $input.all().filter(function (i) { return i.json.route === \"ai\"; });\nif (!todo.length) return [{ json: { dummy: true, id: \"\", threadId: \"\", subject: \"(none)\", from: \"(none)\", snippet: \"\" } }];\nreturn todo;"
+      },
+      "id": "30037beb-3b55-4e2b-ae0f-7646329a6651",
+      "name": "Only the undecided",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        128
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "hq starts a cleanup": {
+      "main": [
+        [
+          {
+            "node": "Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job": {
+      "main": [
+        [
+          {
+            "node": "Tell hq: started",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retry from the error workflow": {
+      "main": [
+        [
+          {
+            "node": "Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tell hq: started": {
+      "main": [
+        [
+          {
+            "node": "Get access token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get access token": {
+      "main": [
+        [
+          {
+            "node": "Did hq give access?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Did hq give access?": {
+      "main": [
+        [
+          {
+            "node": "List the inbox",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop: no Gmail access (hq has already told you and them)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List the inbox": {
+      "main": [
+        [
+          {
+            "node": "Unpack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unpack": {
+      "main": [
+        [
+          {
+            "node": "Tell hq: size of the inbox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tell hq: size of the inbox": {
+      "main": [
+        [
+          {
+            "node": "Was the inbox already empty?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Was the inbox already empty?": {
+      "main": [
+        [
+          {
+            "node": "Email: your inbox just got a full reset",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Emails to sort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Emails to sort": {
+      "main": [
+        [
+          {
+            "node": "Loop over 25 emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tell hq: all done": {
+      "main": [
+        [
+          {
+            "node": "Email: your inbox just got a full reset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pause 2 seconds": {
+      "main": [
+        [
+          {
+            "node": "Get a fresh token for this batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a fresh token for this batch": {
+      "main": [
+        [
+          {
+            "node": "Attach token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach token": {
+      "main": [
+        [
+          {
+            "node": "Get message details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get message details": {
+      "main": [
+        [
+          {
+            "node": "Trim emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trash or archive?": {
+      "main": [
+        [
+          {
+            "node": "Keep the email id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Haiku 4.5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Trash or archive?",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep the email id": {
+      "main": [
+        [
+          {
+            "node": "Sort results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort results": {
+      "main": [
+        [
+          {
+            "node": "Trash or archive the email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trash or archive the email": {
+      "main": [
+        [
+          {
+            "node": "Tell hq: this batch is done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tell hq: this batch is done": {
+      "main": [
+        [
+          {
+            "node": "Loop over 25 emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trim emails": {
+      "main": [
+        [
+          {
+            "node": "Prefilter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prefilter": {
+      "main": [
+        [
+          {
+            "node": "Only the undecided",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only the undecided": {
+      "main": [
+        [
+          {
+            "node": "Trash or archive?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop over 25 emails": {
+      "main": [
+        [
+          {
+            "node": "Tell hq: all done",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pause 2 seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "errorWorkflow": "E8QdNWWPez3ic93f",
+    "saveExecutionProgress": false,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "31be5b63-5c1f-4d8b-91cf-488ad25e63db",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "edf8a10cafd42d00d415f6605c15d16e5837014ff7155fd8dae524bc9fba18ce"
+  },
+  "nodeGroups": [],
+  "id": "mRF1LCqEOy5ErKPy",
+  "tags": []
+}

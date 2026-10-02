@@ -1,0 +1,408 @@
+{
+  "name": "hq smartinbox events",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hq-smartinbox-events",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "id": "69956559-2c1c-4ae7-9373-b35d771da455",
+      "name": "hq smartinbox event",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        304
+      ],
+      "webhookId": "ea65ee20-ae0e-4859-a458-66a5595bbe60",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "hq webhook secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "sic.paid"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Paid"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "sic.access_missing"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Gmail access missing"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "sic.started"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Cleaning started"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "sic.prefs_reminder"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Form reminder"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "sic.connect_reminder"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Connect reminder"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "sic.access_lost"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Access closed by them"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4ee9cb9b-9b04-449e-a9ef-beba05d25d52",
+      "name": "Which event?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "sendHTML": true,
+        "subject": "Payment received: connect your Gmail to start your cleanup",
+        "htmlContent": "=<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#1c130d;max-width:520px\"><p>Hi {{ $json.body.client.first_name || \"there\" }},</p><p>Thank you, your payment is received.</p><p><b>Next step: connect your Gmail.</b> On the Google screen, tick the box that gives access to your Gmail. Without it I cannot clean your inbox.</p><p style=\"margin:24px 0\"><a href=\"{{ $json.body.connect_url }}\" style=\"display:inline-block;background:#e6935a;color:#1c130d;padding:13px 26px;border-radius:999px;font-weight:bold;text-decoration:none\">Connect my Gmail</a></p><p>If Google says \"Google has not verified this app\", tap <b>Advanced</b>, then continue. That is normal while my review with Google finishes.</p><p>Not sure how it looks? <a href=\"{{ $json.body.video_url }}\" style=\"color:#b8642a\">Watch the short video</a>.</p><p style=\"font-size:13px;color:#6b5a4a\">If a button does not open, press and hold it to copy the link, then paste it into your browser.</p><p>Thanks,<br>Juliet, SmartInboxCleanup<br><a href=\"https://smartinboxcleanup.buildwithjuliet.com\" style=\"color:#b8642a\">smartinboxcleanup.buildwithjuliet.com</a></p><p style=\"margin:10px 0 0\"><a href=\"https://smartinboxcleanup.buildwithjuliet.com\"><img src=\"https://hq.buildwithjuliet.com/logo.png\" alt=\"buildwithjuliet\" height=\"48\" style=\"height:48px;width:auto;border:0;display:block\"></a></p></div>",
+        "sender": "kosy@buildwithjuliet.com",
+        "receipients": "={{ $json.body.client.email }}",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "id": "7d6a5c35-5d66-4efb-9d79-0caeca185073",
+      "name": "Email: payment received, connect Gmail",
+      "type": "n8n-nodes-base.sendInBlue",
+      "typeVersion": 1,
+      "position": [
+        624,
+        -32
+      ],
+      "credentials": {
+        "sendInBlueApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Brevo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendHTML": true,
+        "subject": "Your cleanup could not start: Gmail access was not given",
+        "htmlContent": "=<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#1c130d;max-width:520px\"><p>Hi {{ $json.body.client.first_name || \"there\" }},</p><p>Your cleanup could not start, because the box that gives me access to your Gmail was not ticked when you signed in with Google.</p><p><b>Your payment is safe and still counts.</b> Watch this short video to see exactly where to tick it, then try again:</p><p><a href=\"{{ $json.body.video_url }}\" style=\"color:#b8642a;font-weight:bold\">Watch the video</a></p><p style=\"margin:24px 0\"><a href=\"{{ $json.body.connect_url }}\" style=\"display:inline-block;background:#e6935a;color:#1c130d;padding:13px 26px;border-radius:999px;font-weight:bold;text-decoration:none\">Try again</a></p><p style=\"font-size:13px;color:#6b5a4a\">If a button does not open, press and hold it to copy the link, then paste it into your browser.</p><p>Thanks,<br>Juliet, SmartInboxCleanup<br><a href=\"https://smartinboxcleanup.buildwithjuliet.com\" style=\"color:#b8642a\">smartinboxcleanup.buildwithjuliet.com</a></p><p style=\"margin:10px 0 0\"><a href=\"https://smartinboxcleanup.buildwithjuliet.com\"><img src=\"https://hq.buildwithjuliet.com/logo.png\" alt=\"buildwithjuliet\" height=\"48\" style=\"height:48px;width:auto;border:0;display:block\"></a></p></div>",
+        "sender": "kosy@buildwithjuliet.com",
+        "receipients": "={{ $json.body.client.email }}",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "id": "a4e78357-3290-47ba-a0f0-be372e90cdad",
+      "name": "Email: Gmail access missing, with the video",
+      "type": "n8n-nodes-base.sendInBlue",
+      "typeVersion": 1,
+      "position": [
+        624,
+        144
+      ],
+      "credentials": {
+        "sendInBlueApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Brevo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendHTML": true,
+        "subject": "Your inbox is being cleaned",
+        "htmlContent": "=<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#1c130d;max-width:520px\"><p>Hi {{ $json.body.client.first_name || \"there\" }},</p><p>Your inbox is cleaning now.</p><p>You can watch it move: refresh your Gmail every so often, and the number of emails goes steadily down. Or open your progress page:</p><p style=\"margin:24px 0\"><a href=\"{{ $json.body.job_url }}\" style=\"display:inline-block;background:#e6935a;color:#1c130d;padding:13px 26px;border-radius:999px;font-weight:bold;text-decoration:none\">See my progress</a></p><p>How long it takes depends on how many emails you have. Most inboxes are done in a few minutes, and large ones can take several hours. The AI is working hard to keep your important emails, so it goes through everything carefully.</p><p>You do not need to stay on the page. I will email you when it is done.</p><p style=\"font-size:13px;color:#6b5a4a\">If a button does not open, press and hold it to copy the link, then paste it into your browser.</p><p>Thanks,<br>Juliet, SmartInboxCleanup<br><a href=\"https://smartinboxcleanup.buildwithjuliet.com\" style=\"color:#b8642a\">smartinboxcleanup.buildwithjuliet.com</a></p><p style=\"margin:10px 0 0\"><a href=\"https://smartinboxcleanup.buildwithjuliet.com\"><img src=\"https://hq.buildwithjuliet.com/logo.png\" alt=\"buildwithjuliet\" height=\"48\" style=\"height:48px;width:auto;border:0;display:block\"></a></p></div>",
+        "sender": "kosy@buildwithjuliet.com",
+        "receipients": "={{ $json.body.client.email }}",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "id": "f5f08b7d-c08d-4203-8b56-bc324c86bd2a",
+      "name": "Email: your inbox is being cleaned",
+      "type": "n8n-nodes-base.sendInBlue",
+      "typeVersion": 1,
+      "position": [
+        624,
+        304
+      ],
+      "credentials": {
+        "sendInBlueApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Brevo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendHTML": true,
+        "subject": "One step left: tell me what to keep and what to trash",
+        "htmlContent": "=<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#1c130d;max-width:520px\"><p>Hi {{ $json.body.client.first_name || \"there\" }},</p><p>Your Gmail is connected, but I have not started yet, because I am still waiting for your form.</p><p>It takes a minute, and it is what tells the AI what matters to you.</p><p style=\"margin:24px 0\"><a href=\"{{ $json.body.job_url }}\" style=\"display:inline-block;background:#e6935a;color:#1c130d;padding:13px 26px;border-radius:999px;font-weight:bold;text-decoration:none\">Fill my form</a></p><p style=\"font-size:13px;color:#6b5a4a\">If a button does not open, press and hold it to copy the link, then paste it into your browser.</p><p>Thanks,<br>Juliet, SmartInboxCleanup<br><a href=\"https://smartinboxcleanup.buildwithjuliet.com\" style=\"color:#b8642a\">smartinboxcleanup.buildwithjuliet.com</a></p><p style=\"margin:10px 0 0\"><a href=\"https://smartinboxcleanup.buildwithjuliet.com\"><img src=\"https://hq.buildwithjuliet.com/logo.png\" alt=\"buildwithjuliet\" height=\"48\" style=\"height:48px;width:auto;border:0;display:block\"></a></p></div>",
+        "sender": "kosy@buildwithjuliet.com",
+        "receipients": "={{ $json.body.client.email }}",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "id": "d7e4e7cf-4664-4597-89c8-d73fd2bde0cf",
+      "name": "Email: one step left, the form",
+      "type": "n8n-nodes-base.sendInBlue",
+      "typeVersion": 1,
+      "position": [
+        624,
+        480
+      ],
+      "credentials": {
+        "sendInBlueApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Brevo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendHTML": true,
+        "subject": "Your cleanup is paid for: connect your Gmail to start",
+        "htmlContent": "=<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#1c130d;max-width:520px\"><p>Hi {{ $json.body.client.first_name || \"there\" }},</p><p>Your payment is in, but I cannot start until you connect your Gmail.</p><p style=\"margin:24px 0\"><a href=\"{{ $json.body.connect_url }}\" style=\"display:inline-block;background:#e6935a;color:#1c130d;padding:13px 26px;border-radius:999px;font-weight:bold;text-decoration:none\">Connect my Gmail</a></p><p>Need help? <a href=\"{{ $json.body.video_url }}\" style=\"color:#b8642a\">Watch the short video</a>.</p><p style=\"font-size:13px;color:#6b5a4a\">If a button does not open, press and hold it to copy the link, then paste it into your browser.</p><p>Thanks,<br>Juliet, SmartInboxCleanup<br><a href=\"https://smartinboxcleanup.buildwithjuliet.com\" style=\"color:#b8642a\">smartinboxcleanup.buildwithjuliet.com</a></p><p style=\"margin:10px 0 0\"><a href=\"https://smartinboxcleanup.buildwithjuliet.com\"><img src=\"https://hq.buildwithjuliet.com/logo.png\" alt=\"buildwithjuliet\" height=\"48\" style=\"height:48px;width:auto;border:0;display:block\"></a></p></div>",
+        "sender": "kosy@buildwithjuliet.com",
+        "receipients": "={{ $json.body.client.email }}",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "id": "736ca83b-8287-4907-bdd0-bbeb91a244c1",
+      "name": "Email: connect your Gmail reminder",
+      "type": "n8n-nodes-base.sendInBlue",
+      "typeVersion": 1,
+      "position": [
+        624,
+        640
+      ],
+      "credentials": {
+        "sendInBlueApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Brevo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendHTML": true,
+        "subject": "Your cleanup stopped: connect your Gmail again",
+        "htmlContent": "=<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#1c130d;max-width:520px\"><p>Hi {{ $json.body.client.first_name || \"there\" }},</p><p>Your cleanup stopped, because the access to your Gmail was closed.</p><p><b>Your payment still counts.</b> Connect again and I carry on from where it stopped.</p><p style=\"margin:24px 0\"><a href=\"{{ $json.body.connect_url }}\" style=\"display:inline-block;background:#e6935a;color:#1c130d;padding:13px 26px;border-radius:999px;font-weight:bold;text-decoration:none\">Connect my Gmail again</a></p><p style=\"font-size:13px;color:#6b5a4a\">If a button does not open, press and hold it to copy the link, then paste it into your browser.</p><p>Thanks,<br>Juliet, SmartInboxCleanup<br><a href=\"https://smartinboxcleanup.buildwithjuliet.com\" style=\"color:#b8642a\">smartinboxcleanup.buildwithjuliet.com</a></p><p style=\"margin:10px 0 0\"><a href=\"https://smartinboxcleanup.buildwithjuliet.com\"><img src=\"https://hq.buildwithjuliet.com/logo.png\" alt=\"buildwithjuliet\" height=\"48\" style=\"height:48px;width:auto;border:0;display:block\"></a></p></div>",
+        "sender": "kosy@buildwithjuliet.com",
+        "receipients": "={{ $json.body.client.email }}",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "id": "55f66842-c1ea-4ef7-9eae-da5231f4b446",
+      "name": "Email: Gmail access was closed, connect again",
+      "type": "n8n-nodes-base.sendInBlue",
+      "typeVersion": 1,
+      "position": [
+        624,
+        800
+      ],
+      "credentials": {
+        "sendInBlueApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Brevo account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "hq smartinbox event": {
+      "main": [
+        [
+          {
+            "node": "Which event?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Which event?": {
+      "main": [
+        [
+          {
+            "node": "Email: payment received, connect Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email: Gmail access missing, with the video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email: your inbox is being cleaned",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email: one step left, the form",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email: connect your Gmail reminder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email: Gmail access was closed, connect again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "ad2cb785-bcba-4930-b045-a2134c6daa3b",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "edf8a10cafd42d00d415f6605c15d16e5837014ff7155fd8dae524bc9fba18ce"
+  },
+  "nodeGroups": [],
+  "id": "izwVak5XTYh39PYI",
+  "tags": []
+}
