@@ -1,6 +1,6 @@
 # SmartInboxCleanup: the hq version (latest)
 
-[![Watch the hq version demo](https://img.youtube.com/vi/8ziZ-N75uu0/0.jpg)](https://youtu.be/8ziZ-N75uu0)
+[![Watch the hq version demo](hq-version/video-thumbnail.png)](https://youtu.be/8ziZ-N75uu0)
 
 Watch the walkthrough: https://youtu.be/8ziZ-N75uu0
 
