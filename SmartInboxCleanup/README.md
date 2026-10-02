@@ -26,8 +26,9 @@ I moved the whole customer journey into my own backend (called hq), and kept n8n
 
 * An inbox of 113 emails: 107 trashed, 6 kept.
 * An inbox of 101 emails: 79 trashed, 22 archived.
+* A free link run on a real inbox of 1,655 emails: 1,312 trashed, 343 archived, finished at 100 percent.
 
-Both ran end to end through the real payment, the real Google sign in and the new progress screen.
+The first two ran end to end through the real payment, the real Google sign in and the new progress screen.
 
 ## The three workflows
 
